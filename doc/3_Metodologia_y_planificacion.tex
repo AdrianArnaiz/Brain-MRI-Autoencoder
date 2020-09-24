@@ -1,0 +1,133 @@
+\chapter{Planning and Methodology}
+\label{chapter:planning}
+
+In this chapter, we are going to discuss the scheduling for the project and the methodology used in this one.
+
+\section{Research plan}
+In this section, we are making a time planning for our project. Planning a project is a very important feature, because we can manage the time properly and we can keep a realistic task-calendar. For this purpose, we are going to elaborate a \textbf{Gantt Diagram}. This diagram is a very common resource used in project management \cite{tfm_cunha}.
+
+Our diagram is a weekly Gannt Diagram. It has 17 weeks ([mm/dd/yyyy]): 
+
+\begin{itemize}
+    \item Week 1: from 09/14/2020 to 09/20/2020
+    \item Week 17: from 01/01/2020 to 01/10/2021
+\end{itemize}
+
+It is built by all the tasks that a master's degree final project must have and some personalized ones for this concrete project.
+
+\TBD{This diagram is up to the date of September 27, 2020. We show it in the next page.}
+
+\clearpage
+
+% documentation. This reproduces an example from Wikipedia:
+% http://en.wikipedia.org/wiki/Gantt_chart
+%
+
+
+\definecolor{barblue}{RGB}{153,204,254}
+\definecolor{groupblue}{RGB}{51,102,254}
+\definecolor{linkred}{RGB}{165,0,33}
+%\renewcommand\sfdefault{phv}
+%\renewcommand\mddefault{mc}
+%\renewcommand\bfdefault{bc}
+\setganttlinklabel{s-s}{START-TO-START}
+\setganttlinklabel{f-s}{FINISH-TO-START}
+\setganttlinklabel{f-f}{FINISH-TO-FINISH}
+\sffamily
+\begin{ganttchart}[
+    canvas/.append style={fill=none, draw=black!5, line width=.75pt},
+    hgrid style/.style={draw=black!5, line width=.75pt},
+    vgrid={*1{draw=black!5, line width=.75pt}},
+    today=2,
+    today rule/.style={
+      draw=black!64,
+      dash pattern=on 3.5pt off 4.5pt,
+      line width=1.5pt
+    },
+    today label font=\footnotesize\bfseries,
+    title/.style={draw=none, fill=none},
+    title label font=\bfseries\footnotesize\color{black!70},
+    title label node/.append style={below=7pt},
+    include title in canvas=false,
+    bar label font=\mdseries\footnotesize\color{black!70},
+    bar label node/.append style={left=1.2cm},
+    bar/.append style={draw=none, fill=black!63},
+    bar incomplete/.append style={fill=barblue},
+    bar progress label font=\mdseries\scriptsize\color{black!60},
+    group incomplete/.append style={fill=groupblue},
+    group left shift=0,
+    group right shift=0,
+    group height=.5,
+    group peaks tip position=0,
+    group label node/.append style={left=.2cm},
+    group progress label font=\bfseries\scriptsize,
+    link/.style={-latex, line width=1.5pt, linkred},
+    link label font=\scriptsize\bfseries,
+    link label node/.append style={below left=-2pt and 0pt}
+  ]{1}{17}
+  \gantttitle[
+    title label node/.append style={below left=7pt and -3pt}
+  ]{WEEKS:\quad1}{1}
+  \gantttitlelist{2,...,17}{1} \\
+  \ganttgroup[progress=100]{Project Selection}{1}{1} \\
+  \ganttgroup[progress=99]{Scope and planning}{2}{2} \\
+  \ganttbar[
+    progress=99,
+    name=WBS1A
+  ]{Title, Keywords and Abstract}{2}{2} \\
+  \ganttbar[
+    progress=95,
+    name=tit
+  ]{Overview, relevance and aims}{2}{2} \\
+  \ganttbar[
+    progress=95,
+    name=over
+  ]{Methodology and planning}{2}{2} \\[grid]
+  \ganttgroup[progress=5]{State of art research}{3}{5} \\
+  \ganttbar[progress=10]{Search bibliography}{3}{5} \\
+  \ganttbar[progress=0]{Search similar code projects}{4}{5} \\
+  \ganttbar[progress=0]{Resume state of art, redefine aims}{4}{5}\\[grid]
+  
+  \ganttgroup[progress=0]{Project development}{6}{14} \\
+  \ganttbar[progress=0]{Data preparation}{6}{6} \\
+  \ganttbar[progress=0]{Deep Learning Design}{6}{7} \\
+  \ganttbar[progress=0, name=cod]{Deep Learning codification}{7}{9}\\
+  \ganttbar[progress=0, name=exe]{Experiment execution}{10}{12}\\
+  \ganttbar[progress=0]{Discuss results, improvements}{12}{13}\\
+  \ganttbar[progress=0]{Update documentation}{14}{14}\\[grid]
+  
+  \ganttgroup[progress=0]{Documentation}{15}{16} \\[grid]
+  
+  \ganttgroup[progress=0]{Presentation and defence}{17}{17} \\
+  \ganttlink[link type=f-s]{cod}{exe}
+\end{ganttchart}
+\rmfamily
+
+
+\clearpage
+
+
+\section{Methodology}
+
+\TBD{To Be Done.}
+
+\textbf{Estrategia de investigación: En este apartado se deben describir la estrategia de investigación a seguir (consultar el libro de Oates), así como las técnicas de generación de datos (cuantitativas y/o cualitativas) y las herramientas a utilizar (p.ej. MINITAB, ATLAS.TI, SPSS, etc.).}
+\textbf{En cuanto a la descripción de la metodología de trabajo o investigación aplicada y conceptos clave: indicar cuáles son las posibles estrategias para llevar a cabo el trabajo e indicar cuál fue la estrategia escogida (p.ej.: desarrollar un producto nuevo, adaptar un producto existente, etc.). Valorar por qué esta es la estrategia más apropiada para conseguir los objetivos propuestos. En cuanto a la descripción general del proceso de trabajo/desarrollo realizado: describir las posibles metodologías de investigación (por ejemplo, encuestas, entrevistas), metodologías de desarrollo (por ejemplo, cascada, creación de prototipo, programación ágil), recursos, etc. utilizados para abordar el proyecto.}
+
+La metodología debe incluir los pasos,
+etapas o fases que se seguirán en el trabajo para alcanzar los objetivos propuestos
+y validar (en su caso) las hipótesis planteadas. 
+
+las técnicas, los métodos, las estrategias, las medidas, las herramientas, los
+recursos, etc., empleados en el trabajo. Estos, por supuesto, variarán en función
+del ámbito especializado en el que se enmarque el trabajo académico.
+
+Utilizaremos metodologias de ciencia de datos: explicar metodologia de ciencia de datos y ciclo de vida. como analizar diseñar implementar y testear.
+
+Contar las metodologias de desarrolo de algoritmos de DL en medicina. Ciclios, graficos de desarrollo: obtener datos- desarrrolar modelo- mejorar modelo, etc etc.
+
+Contar etapas del desarrollo, como valorar el modelo, como gestionarle, etc
+
+Benchmark
+
+Para la gestion usar ciclos ágile.

@@ -1,0 +1,151 @@
+\documentclass[12pt,a4paper,twoside]{book}
+\usepackage{graphicx}
+\usepackage{setspace}	%double spacing for text, single for captions, footnotes, etc.
+%\usepackage{hypernat} 	%substitut de cite que permet fer hyperlinks
+\usepackage{natbib}		% substituye a 'hypernat' que funciona en Windows.
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{color}
+\usepackage[dvipsnames, table]{xcolor}
+\usepackage{hhline} 		% extended styles for tables
+\usepackage{multirow}
+\usepackage{subfigure}
+\usepackage{acronym}
+\usepackage{hyperref}
+\usepackage{amsmath,amsmath,amssymb} 
+\usepackage{fancyhdr}
+\usepackage{epsfig, amsmath}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{pgfgantt}
+\usepackage{placeins}
+
+\usepackage{tcolorbox}
+\usepackage{tabularx}
+
+\RequirePackage{booktabs}
+
+% general settings
+\hypersetup{
+	linktocpage=true,
+	colorlinks=true,
+	linkcolor=blue,
+	citecolor=blue,
+}
+\definecolor{Hgray}{gray}{0.6}
+
+\newenvironment{definition}[1][Definition]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+
+
+%
+% Nuevo comando para resaltar nombres de archivo.
+\newcommand{\filename}[1]{\texttt{#1}}
+
+%
+% Nuevo comando para URLs.
+\newcommand{\myurl}[2]{\href{#1}{#2}\footnote{\url{#1}}}
+
+%
+% Imagenes
+\newcommand{\imagen}[2]{
+	\begin{figure}[!ht]
+		\centering
+		\includegraphics[width=0.8\textwidth]{#1}
+		\caption{#2}\label{fig:#1}
+	\end{figure}
+	\FloatBarrier
+}
+
+%
+% Tabla
+\newcolumntype{C}{>{\arraybackslash}X} % centered "X" column
+
+%
+% Red color for to be done or to be replaced things in document
+\newcommand{\TBD}[1]{\textcolor{BrickRed}{#1}}
+
+%
+%Paragraph formatting
+\setlength{\topmargin}{0cm}
+\setlength{\textheight}{23cm}
+\setlength{\textwidth}{17cm}
+\setlength{\oddsidemargin}{0cm}
+\setlength{\evensidemargin}{0cm}
+\setlength{\headheight}{1cm}
+
+% indica que las 'sub-sub-sections' sean numeradas y aparezcan en el indice
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{2}
+
+% settings for code
+\renewcommand{\algorithmicrequire}{\textbf{Entrada: }}
+\renewcommand{\algorithmicensure}{\textbf{Salida: }}
+
+%%%%%%%%%%%%
+% DOCUMENT %
+%%%%%%%%%%%%
+\begin{document}
+
+% portada
+\input{0_titulo.tex}
+\newpage
+% abstract
+\input{0_resumen.tex}
+\newpage
+
+\pagestyle{fancy}
+\renewcommand{\chaptermark}[1]{ \markboth{#1}{}}
+\renewcommand{\sectionmark}[1]{\markright{ \thesection.\ #1}}
+\lhead[\fancyplain{}{\bfseries\thepage}]{\fancyplain{}{\bfseries\rightmark}}
+\rhead[\fancyplain{}{\bfseries\leftmark}]{\fancyplain{}{\bfseries\thepage}}
+\cfoot{}
+
+% indice
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{Content}
+\tableofcontents
+% listado de figuras
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{List of Figures}
+\listoffigures
+% listado de tablas
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{List of Tables}
+\listoftables
+
+\thispagestyle{empty}
+
+\pagenumbering{arabic}
+
+\pagestyle{fancy}
+\renewcommand{\chaptermark}[1]{ \markboth{#1}{}}
+\renewcommand{\sectionmark}[1]{\markright{ \thesection.\ #1}}
+\lhead[\fancyplain{}{\bfseries\thepage}]{\fancyplain{}{\bfseries\rightmark}}
+\rhead[\fancyplain{}{\bfseries\leftmark}]{\fancyplain{}{\bfseries\thepage}}
+\cfoot{}
+
+%http://kb.mit.edu/confluence/pages/viewpage.action?pageId=3907092
+\onehalfspacing
+\setlength{\parskip}{1em}
+\rmfamily
+
+% capitulos del documento
+\input{1_introduccion.tex}
+\input{2_Objetivos.tex}
+\input{3_Metodologia_y_planificacion.tex}
+\input{4_Conceptos_teóricos.tex}
+\input{5_Tecnicas_y_herramientas.tex}
+\input{6_Desarrollo_del_proyecto}
+\input{7_Trabajos_relacionados}
+\input{8_Conclusiones_y_lineas_futuras}
+
+% bibliografia
+\addcontentsline{toc}{chapter}{Bibliography}
+\bibliographystyle{unsrt}
+\bibliography{referencias}
+
+\end{document}

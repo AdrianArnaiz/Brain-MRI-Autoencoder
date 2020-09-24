@@ -1,0 +1,229 @@
+\chapter{Introduction}
+\label{chapter:introduccion}
+
+\textit{Not Final Note: \TBD{This color ('TBD' tag in latex) are going to be used in non-final versions of the memory to highlight the non-final sentences or things to be changed in the final version}}.
+
+In this chapter we will introduce the main problematic of the project, basing it on its non-solved tasks and relevance.
+
+%%% SECTION
+\section{Problem overview and relevance}
+
+\subsection{MRI general problems}
+
+Neuroimaging in psychiatry allows studying the morphological features of the human brain. With the objective of improving the detection systems, diagnostic and treatment, correlations between the morphological features and the neuropsychiatric disorders can be addressed in order to achieve that \cite{abou2006neuroimaging}. If we improve brain magnetic resonance image analysis \ref{fig:figs/MRI_image.jpg}, we will improve the detection systems and treatments for neurological diseases, so the social relevance of the field is very important.
+
+\imagen{figs/MRI_image.jpg}{Brain MRI examples \cite{fotomri}}
+
+The relevance of the project is also shown that there are a lot of branches in which neuroimaging analysis can improve. Machine learning, and more recently Deep Learning and Computer Vision, has irrupted in this field for helping in some tasks: 
+
+\begin{itemize}
+    \item \textbf{Disease detection: segmentation and classification}. There are still several problems to solve in classification problem. Brain MRIs are high dimensional, so we have to recruit big amount of images to properly develop a Machine Learning model that be able to achieve high accuracy. It is very difficult to recruit a large number of images, especially disease images. Even if it performs well, machine learning algorithms have been criticized due to the difficult of extract a clear knowledge of them (black-boxes).  \cite{myronenko20183d}. So a experimental approach is disease detection based on outliers from a normative model Patients with pathologies will be outliers in the distribution build by the normative model (they will be out of normal range defined by the normative model) \cite{marquand2016normative} \cite{mourao2011outlier}.
+    \item \textbf{Data Augmentation}. Lack of data problem can be addressed by Data Augmentation techniques, which look for improve our MRI datasets \cite{GanDataAugment2018}.
+    \item \textbf{Improvement of data collection}. Recently high-impact \myurl{https://fastmri.org/}{FastMRI} release from Facebook for improving the speed in MRI scans \cite{fastmri}.
+    \item \underline{\textbf{Image enhancement}}. Clinical evaluation is critical for good disease treatment. Experts and algorithms need good quality images to carry out their tasks. This is the main problem we want to address, so we will explain it deeper in the document \cite{tamada2020review} \cite{myronenko20183d}. 
+\end{itemize}
+
+\subsection{MRI Image enhancement}
+
+\textbf{We are going to focus on the problem of image enhancement, specifically the problem of noise removal}, see \ref{fig:figs/Denoised_MRI.jpeg}. If we achieved good performance in this task, we would research about how to apply this solution to disease detection or data augmentation.
+
+\imagen{figs/Denoised_MRI.jpeg}{Noised and Denoised MRI \cite{fotoDenoisedMri}}
+
+Magnetic resonance images are collected with MR scans and the scan process, even though it is improved continually, adds some failures to the MR image. MR images have some random \textbf{noise} and \textbf{artifacts} due to this fact \cite{artifacts86}. This noise and artifacts are present in the image due to different reasons: hardware-reasons (magnetic fields, etc.), body motion during scanning, thermal noise, weak signal intensity (which causes low signal-to-noise ratio), etc. The difference between noise and artifact is that noise can hide the characteristics of an image, whereas artifacts appear to be characteristic but are not. If the 'problem' is structured, it is probably an artifact, while if it is random, it is probably noise.
+
+\subsection{Noise and artifact reduction with Deep Learning}
+
+To address this problem many approaches have been done, all of them with some disadvantages. Advanced filtering methods \cite{filtermeth12} or retrospective correction approaches have been proposed, but, with the rise of \textbf{Deep Learning}, other methods have been proposed that take advantage of this approach. Deep Learning is very powerful in high-dimensional spaces and non-linear problems, so it can make a better job in feature extraction or information compression. Therefore, it will have good performance with images, where the \textbf{underlying structure of the images will be captured and foreign elements such as noise or artifacts can be eliminated}. 
+
+There are some approaches to reduce the noise and artifacts in MRI images. An recent and outstanding review is made by D.Tamada \cite{tamada2020review}. In this paper D.Tamada summarize Deep Learning Architectures and applications to MRI. We notice the big relevance of denoiser MRI Deep Learning methods in this review. Although there are many methods, we will focus in brain MRI denoisers. 
+
+There are some Deep Learning Architectures to address in the problem of denoise an brain MRI: Single-scale CNN, Denoising CNN, Autoencoders, and Gan-based architectures. \textbf{We will choose the Autoencoder Architecture for this project}.
+
+\textbf{Autoencoders} \cite{autoencoder} encode the input into a lower-dimensional space. It extracts important information from the higher-dimensional space, encodes it, and then decodes it to reconstruct the higher-dimensional spacer from the lower one. \TBD{This architecture will be deeply explained in \ref{chapter:theory} in further stages of the project.}
+
+
+
+\subsection{Our approach}
+
+\begin{tcolorbox}
+In this project, we will design a \textbf{Deep Learning autoencoder for reconstructing brain magnetic resonance images removing noise. In other words, we will train a autoencoder with disease-free neuroimaging data and, with this trained autoencoder, we could define a distribution (or normal range) for the neuroanatomical variability for the illness absence with the main purpose of removing noise. Once trained, the autoencoder should be able to encode a input image and decode it removing noise.}
+\end{tcolorbox}
+
+\textbf{If the main objective of the project is completed, we could research the application oh this model in data augmentation and disease detection fields}. In the case of \textbf{data augmentation}, we will then attempt to reconstruct magnetic resonance images from patients with brain pathologies, with a further view to using the autoencoder to generate 'pathology-free' versions of the said images. In the case of \textbf{disease detection}, we could take an approach like the one in \cite{pinaya2019} (creating a measure for the difference between input and output image and classify it as healthy or control based on this measure). Patients with pathologies will be outliers in the distribution build by the autoencoder (they will be out of normal range defined by the autoencoder) \cite{marquand2016normative} \cite{mourao2011outlier}. This assumption of patients as outliers (based in \cite{mourao2011outlier}) is used in \cite{pinaya2019} for abnormal brain structure detection.
+
+Of course, we will need \textbf{data}. For this project, we will use \textbf{T1-weighted MRI images of control subjects} (no disease). As the project is of fairly limited length, we won't need to detect disease as a principal objective, but only learn to reconstruct normal MRI images, so we won't need pathology images by the moment. In addition, we will investigate whether our method of reconstruction can filter out noise and/or artefacts. So, in essence, we will have $n$ 3D MRI volumes ($n$ can be any number greater than 100) from healthy subjects, we will preprocess it (data augmentation based on adding noise, remove parts...), and train our model to reconstruct the source MRI volumes. We will have access magnetic brain resonance images from control subjects for training the autoencoder. This data is arranged from different sources. \TBD{Concrete sources of data images used in the project will be discussed in further stages but we have some clear options in this moment}:
+
+\begin{itemize}
+    \item The \myurl{https://brain-development.org/ixi-dataset/}{IXI dataset} (\TBD{Most likely to be chosen}).
+    \item Other data sources such as \myurl{https://openneuro.org}{Open Neuro}.
+\end{itemize}
+
+
+
+\section{Personal motivation}
+
+My personal motivation to carry out the project arises from several factors. My first steps in the world of Machine Learning were in the last year of my career at the University of Burgos. I was lucky enough to collaborate last year with the \myurl{http://admirable-ubu.es/}{ADMIRABLE} research department. The project that I did (in which we continue working) was on the \myurl{https://github.com/AdrianArnaiz/TFG-Neurodegenerative-Disease-Detection}{use of biomarkers extracted from the voice for the construction of classifiers that detect Parkinson's}. The project include topics like \textbf{signal processing}, \textbf{supervised learning}, \textbf{unsupervised learning} and \textbf{transfer learning}. The project was very successful and we had a lot of impact at that time. We are currently in the process of meeting with the Burgos hospital to continue developing the model and the application (project and impact recompilation in Github).
+
+This project has fully opened me the doors the world of artificial intelligence and machine learning, which is a field of knowledge that I love. I have always liked math, problem-solving and since I started my career I love programming. Therefore, I find this field the ideal that aligns with my tastes and interests. As i said before, I have done lot of jobs with supervised learning or data analysis, but only with tabular data sets or text-datasets, so I wanted to break in the world of image processing and Deep Learning.
+
+Then I worked half year in Ernst and Young, developing Machine Learning systems for RPA tasks (classify emails at Telefónica, Chatbot for Maxium or Fuzzy Name Matching for Xunta de Galicia).
+
+In addition, I believe that the application of AI to medicine is one of the fields that may be of greater general interest to society. By advancing in the speed and quality of medical diagnoses and treatments, it will be possible to achieve health of higher quality, speed and accessibility for all. Also, computer vision and deep learning have helped to achieve the big advances in this field nowadays. 
+
+
+\section{State of art: related works}
+\textit{\TBD{In later stages of the project, the resume of related works and state of art will be replaced in other place of the document.}}
+
+The world relevance and impact of this problem is also shown in the related articles of this subject. The state of art of Deep Learning Autoencoders applied to brain MRI shows the relevance of this field. \TBD{In this stage of the project (\today), we have deeply read 3 papers for building the first bricks and identify the goals and methodology of the project}.
+
+\begin{itemize}
+    \item Walter Pinaya, 2018 \cite{pinaya2019}:
+    
+    Classic methods and approaches based on sMRI can't get a good performance in abnormal brain structural detection because neuroanatomical alterations in neuropsychiatric disorders are commonly subtle and spatially distributed. Another approach based on Machine Learning methods could improve performance. ML algorithms are sensitive to these subtle characteristics. The downside of this road is the need for a large amount of image data (control and disease) and that the models are black-boxes with no information on the critical characteristics used for the decision. With this Deep Autoencoder, they put this matter up for discussion.
+    
+    In this project, they address the problem of creating a normative model using a deep autoencoder trained with control subjects. With this autoencoder defining a distribution for control patients, they define a deviation metric to measure the neuroanatomical deviation in patients. Patients with some disorder should be outliers in this distribution.
+    
+    Architecture and technique used in the experiment:
+    \begin{itemize}
+        \item Semi-supervised autoencoder: reconstruction of the image and prediction of age and sex.
+        \item 3 hidden layers with SELUs activation function.
+        \item Output layer with Linear activation function.
+        \item Loss function: MSE from reconstructed and original image + cross-entropy for age + cross-entropy for years + Unsupervised cross-covariance.
+        \item 2000 epochs and 2000 iterations.
+        \item Adam with adaptative learning rate.
+        \item 64 samples mini-batches.
+        \item Transformation of input image:
+        \begin{itemize}
+            \item Add Gaussian noise (0, 0.1).
+            \item Feature scaling (normalization).
+        \end{itemize}
+        \item One-hot encoding for \texttt{sex} and \texttt{year} labels.
+    \end{itemize}
+    
+    \item \TBD{We made a recompilation of papers reviewed in Table 1 of D. Tamada, 2020 \cite{tamada2020review} and by our own, with some removals and additions based in our goal of the project (see \ref{table:paper_overview}). In further stages we will explain deeply some papers from the table \ref{table:paper_overview}}. From the table of D. Tamada we only obtain 1 autoencoder study \cite{bermudez2018t1autoencoder}, 3 sCNN and DnCNN approaches \cite{kidoh2019scnnt1} \cite{ganHR3d} \cite{dncnnnoise2noise} and 1 GAN study. The other 5 papers have been compiled by our own (Autoencoder based: \cite{pinaya2019} \cite{gondara2016medicalautoencoder} \cite{superresolution} \cite{fuzzyautoencoder}, GAN-Autoencoder-based: \cite{wganautoencoder}).
+\end{itemize}    
+
+\begin{table}[!ht]
+    \setlength\extrarowheight{2pt} % for a bit of visual "breathing space"
+    \rowcolors {2}{gray!15}{}
+    \begin{tabularx}{\textwidth}{C C C}
+    \hline
+        \textbf{Purpose} & \textbf{Year, Authors} & \textbf{Network} \\
+        \hline
+        
+        \rowcolor{orange!10}
+        \multicolumn{3}{c}{\textbf{Autoencoders}}\\
+        
+        \hline
+        
+        Identify brain abnormal structural patterns & 2018, W. Pinaya, et al \cite{pinaya2019} & \textbf{Semi-supervised autoencoder for HCP Dataset} \\
+        
+        Denoising for T1 weighted brain MRI & 2018, C. Bermudez, et al \cite{bermudez2018t1autoencoder} & \textbf{Autoencoder with skip connections} \\
+        
+        Medical image denoise & 2016, L. Gondara, et al \cite{gondara2016medicalautoencoder} &\textbf{Convolutional denoising autoencoder} \\
+        
+        General image denoising and super resolution & 2016, XJ. Mao et all \cite{superresolution} [Code available] & \textbf{Convolutional auto-encoders with symmetric skip connections} \\
+        
+        Brain MRI denoise & 2019, N. Chauhan et al \cite{fuzzyautoencoder} & \textbf{Convolutional denoising autoencoder with Fuzzy Logic filters} \\
+
+        \hline
+        \rowcolor{orange!10}
+        \multicolumn{3}{c}{\textbf{sCNN and DnCNN}}\\
+        \hline
+
+        Denoising for T1, T2 and FLAIR brain images & 2018, M. Kidoh, et al \cite{kidoh2019scnnt1} & Single-scale CNN with DCT \\
+        
+        Motion artifact reduction for brain MRI & 2018, P. Johnson, et al \cite{scnnmotion} & Single-scale CNN\\
+        
+        Denoising for multishot DWI & 2020, M Kawamura et al \cite{dncnnnoise2noise} & DnCNN with Noise2Noise \\
+        
+        \hline
+        \rowcolor{orange!10}
+        \multicolumn{3}{c}{\textbf{GAN}}\\
+        \hline
+        
+        Motion artifact reduction for brain MRI & 2018 BA. Duffy, et al \cite{ganHR3d} & GAN with HighRes3dnet as generator \\
+        
+        Denoise 3D MRI & 2019, M. Ran et al \cite{wganautoencoder} & \textbf{Wasserstein GAN with Convolutional Autoencoder generator} \\
+ 
+    \hline
+    \end{tabularx}
+    \caption{Overview of studies for noise reduction based in Table 1 from D. Tamada \cite{tamada2020review} (In bold the autoencoder related architecture)}
+    \label{table:paper_overview}
+\end{table}
+
+    
+
+
+%%% SECTION NOT SHOWN, examples from tables and algorithms
+
+\iffalse
+\section{Latex Examples}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.6\textwidth]{figs/image1.png}
+	\caption{Pie de la imagen.}
+	\label{fig:context-anoni1}
+\end{figure}
+
+
+\imagen{figs/image1.png}{asdasd}
+
+Un ejemplo de pseudo-código se puede encontrar en el Código \ref{code:RandomSwitch-1}
+
+\begin{algorithm}
+	\caption{Pseudocódigo del algoritmo \textit{Random Switch}}
+	\label{code:RandomSwitch-1}
+	\begin{algorithmic}
+		\REQUIRE{El grafo original $G$ y el porcentaje de anonimización $p$ que se desea aplicar.}
+		\ENSURE{El grafo $G$ anonimizado.}
+		\STATE $num = round(G.num\_edges() * p)$
+		\STATE $i = 0$
+		\WHILE {$i < num$}
+		\STATE {$e_{1} = G.random\_edge()$}
+		\STATE $e_{2} = G.random\_edge()$
+		\STATE $new\_e_{1} = (e_{1}.origen, e_{2}.origen)$
+		\STATE $new\_e_{2} = (e_{1}.destino, e_{2}.destino)$
+		\IF {$!G.exist(new\_e_{1})$ \AND $!G.exist(new\_e_{2})$}
+		\STATE $G.add\_edge(new\_e_{1})$
+		\STATE $G.add\_edge(new\_e_{2})$
+		\STATE $G.delete\_edge(e_{1})$
+		\STATE $G.delete\_edge(e_{2})$
+		\STATE $i=i+1$
+		\ENDIF
+		\ENDWHILE
+		\RETURN $G$
+	\end{algorithmic}
+\end{algorithm}
+
+Un ejemplo de tabla se puede ver en la Tabla \ref{table:ejemplo_vertex_refi_query}
+
+\begin{table}
+	\centering{}
+	\begin{tabular}{ l || c | c | l }
+		\hline
+		Node ID & $\mathcal{H}_{0}$ & $\mathcal{H}_{1}$ & $\mathcal{H}_{2}$ \\
+		\hline
+		\hline
+		Alice & $\epsilon$ & 1 & \{4\}  \\
+		\hline
+		Bob & $\epsilon$ & 4 & \{1, 1, 4, 4\}  \\
+		\hline
+		Carol & $\epsilon$ & 1 & \{4\}  \\
+		\hline
+		Dave & $\epsilon$ & 4 & \{2, 4, 4, 4\}  \\
+		\hline
+		Ed & $\epsilon$ & 4 & \{2, 4, 4, 4\}  \\
+		\hline
+		Fred & $\epsilon$ & 2 & \{4, 4\}  \\
+		\hline
+		Greg & $\epsilon$ & 4 & \{2, 2, 4, 4\}  \\
+		\hline
+		Harry & $\epsilon$ & 2 & \{4, 4\}  \\
+		\hline
+	\end{tabular}
+	\caption{\textit{Vertex refinement queries}.}
+	\label{table:ejemplo_vertex_refi_query}
+\end{table}
+\fi
