@@ -1,4 +1,4 @@
-Brain-MRI-Denoiser-Autoencoder
+Brain-MRI-Autoencoder
 =
 
 [![made-with-python](https://img.shields.io/badge/Coded%20with-Python-21496b.svg?style=for-the-badge&logo=Python)](https://www.python.org/)
@@ -8,7 +8,7 @@ Brain-MRI-Denoiser-Autoencoder
 ![GitHub license](https://img.shields.io/github/license/AdrianArnaiz/Brain-MRI-Denoiser-Autoencoder?style=for-the-badge&logo=Github)
 ![Github Follow](https://img.shields.io/github/followers/AdrianArnaiz?style=social&label=Follow)
 
-###### Deep Autoencoder for noise reduction in brain MRI
+###### Deep Autoencoder for brain MRI
 
 ***********
 
@@ -18,7 +18,6 @@ Brain-MRI-Denoiser-Autoencoder
 * **Adrián Arnaiz Rodríguez** - [aarnaizr@uoc.edu](mailto:aarnaizr@uoc.edu)
 
 #### Tutor: 
-* **Baris Kanber**
-  * *Researcher in Medical Image Computing at **University College London**, and the **National Institute for Health Research UCL/UCLH Biomedical Research Centre***. 
+* **Dr. Baris Kanber** - [bkanber@uoc.edu](mailto:bkanber@uoc.edu)
 
 ***************
