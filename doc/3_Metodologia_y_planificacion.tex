@@ -13,7 +13,7 @@ Our diagram is a weekly Gannt Diagram. It has 17 weeks ([mm/dd/yyyy]):
     \item Week 17: from 01/01/2020 to 01/10/2021
 \end{itemize}
 
-It is built by all the tasks that a master's degree final project must have and some personalized ones for this concrete project.
+It is built by all the main tasks that a master's degree final project must have and some personalized ones for this project. So we will have 6 big phases derived from project submits.
 
 \TBD{This diagram is up to the date of September 27, 2020. We show it in the next page.}
 
@@ -109,25 +109,31 @@ It is built by all the tasks that a master's degree final project must have and 
 
 \section{Methodology}
 
-\TBD{To Be Done.}
+In this section we must choose a common academic Data Mining development methodology, in which there are described the phases, tasks and its relationships.
 
-\textbf{Estrategia de investigación: En este apartado se deben describir la estrategia de investigación a seguir (consultar el libro de Oates), así como las técnicas de generación de datos (cuantitativas y/o cualitativas) y las herramientas a utilizar (p.ej. MINITAB, ATLAS.TI, SPSS, etc.).}
-\textbf{En cuanto a la descripción de la metodología de trabajo o investigación aplicada y conceptos clave: indicar cuáles son las posibles estrategias para llevar a cabo el trabajo e indicar cuál fue la estrategia escogida (p.ej.: desarrollar un producto nuevo, adaptar un producto existente, etc.). Valorar por qué esta es la estrategia más apropiada para conseguir los objetivos propuestos. En cuanto a la descripción general del proceso de trabajo/desarrollo realizado: describir las posibles metodologías de investigación (por ejemplo, encuestas, entrevistas), metodologías de desarrollo (por ejemplo, cascada, creación de prototipo, programación ágil), recursos, etc. utilizados para abordar el proyecto.}
+The description and nature of the project are very helpful at this point because the methodology used in the project will depend on the nature of it. The main characteristic of this project is its research-oriented purpose, so we can label the project as an \textbf{academic research project}. Nevertheless, the main objective of this research is to develop a software component (a Deep Convolutional Autoencoder). We can also describe the project as a \textbf{software project}. In addition, the project is located in the Machine Learning and Deep Learning areas. These areas are very related to Maths, Statistics, and Computer Science. In all of these fields, the aim is to analyze data in a quantitative way. We analyze how the variables are related, how the autoencoder performance with a concrete measure, how it trains getting concrete metrics (how it learns, time, overfitting...), etc. So our methodology should be \textbf{quantitative}. We will take a representative sample of brain MRI, we will train the autoencoder and inference the results to all the population. All this sample and inference techniques are addressed by the validation methods of Machine Learning (Train/test, Cross-validation to reduce bias, etc). 
 
-La metodología debe incluir los pasos,
-etapas o fases que se seguirán en el trabajo para alcanzar los objetivos propuestos
-y validar (en su caso) las hipótesis planteadas. 
+So, due to the nature of the project, we have to apply a methodology for an \textbf{quantitative academic research project for data mining software development}. 
 
-las técnicas, los métodos, las estrategias, las medidas, las herramientas, los
-recursos, etc., empleados en el trabajo. Estos, por supuesto, variarán en función
-del ámbito especializado en el que se enmarque el trabajo académico.
+\begin{tcolorbox}
+In a very summarized way, we will start researching the state of art, defining the problem, and proposing a model to solve the target problem. We will choose and prepare our data. Then we will develop the data mining software solution for this problem, evaluating each step. Finally, we will evaluate our model an get a conclusion for our hypothesis. Thus, \textbf{CRISP-DM methodology} embed all of these steps and it will be chosen as the project methodology.
+\end{tcolorbox}
 
-Utilizaremos metodologias de ciencia de datos: explicar metodologia de ciencia de datos y ciclo de vida. como analizar diseñar implementar y testear.
+The methodology that best suits our project is \textbf{CRISP-DM} \cite{crisp}. The \textit{\textbf{CR}oss-\textbf{I}ndustry \textbf{S}tandard \textbf{P}rocess for \textbf{D}ata \textbf{M}ining} is a framework used for creating and deploying machine learning solutions. Moreover, research and quantitative tasks can be embedded  in the CRISP-DM phases (i.e. state of art research phase can fit into business understanding CRISP-DM phase and quantitative evaluation can fit into model evaluation).
 
-Contar las metodologias de desarrolo de algoritmos de DL en medicina. Ciclios, graficos de desarrollo: obtener datos- desarrrolar modelo- mejorar modelo, etc etc.
+As we know, agile methodologies are often used in software development. CRIPS-DM is neither an agile methodology nor a waterfall one. This methodology has clear stages, but the order of them is not strict and we could move forward and back whenever we need, in order to improve our data mining final model. In fact, this movement between phases is widely used. Also it has a iterative cycle, in which data, data preparation, modelling and evaluation are improved wit the previous iteration feedback.
 
-Contar etapas del desarrollo, como valorar el modelo, como gestionarle, etc
+Figure \ref{fig:figs/crisp_dm.png} shows the phase dependencies and order. As we can see, the straight lines define the dependencies between phases as in a classical methodology. Nevertheless, We can see the circle and the two-arrowed straight lines that show the flexibility and the agile similarity of CRISP-DM.
 
-Benchmark
 
-Para la gestion usar ciclos ágile.
+\imagen[0.5]{figs/crisp_dm.png}{CRISP-DM Cycle}
+
+The phases of CRISP-DM \cite{crisp} are the following (\TBD{In later stages, references will be made to the specific sections of the document where the phases are carried out}):
+\begin{description}
+    \item[Business Understanding]: deep analysis of the business needs. In this phase we can establish an objective. In our case, we can research the state of art for Deep Convolutional Autoencoder for brain MRI and propose a model based on this research.
+    \item[Data Understanding]: we should research the data sources as  \myurl{https://brain-development.org/ixi-dataset/}{IXI}, data quality and we should explore the data and its characteristics.
+    \item[Data Preparation]: Data should be cleaned, filtered, selected and integrated if necessary. We could carry out tasks like preprocessing T1 weighted brain MRI or realize data augmentation. I will be explained in-depth in section \ref{section:datalifecycle}.
+    \item[Modeling]: Specify the model to use and the architecture, parameters, etc. Maybe running several model architecture and hyper-parameter optimization to reach the most powerful model. So in can be an iterative process.
+    \item[Evaluation]: We must evaluate models properly to get meaningful conclusions. There are many techniques of model evaluation and it should be made carefully.
+    \item[Deployment - Publication]: As our main goal is academic research, this phase would be \textit{Publication}. The tasks are: review the project and generate the final report.
+\end{description}

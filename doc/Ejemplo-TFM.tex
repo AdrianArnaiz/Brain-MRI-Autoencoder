@@ -23,6 +23,7 @@
 \usepackage{tcolorbox}
 \usepackage{tabularx}
 
+
 \RequirePackage{booktabs}
 
 % general settings
@@ -48,11 +49,11 @@
 
 %
 % Imagenes
-\newcommand{\imagen}[2]{
+\newcommand{\imagen}[3][0.8]{
 	\begin{figure}[!ht]
 		\centering
-		\includegraphics[width=0.8\textwidth]{#1}
-		\caption{#2}\label{fig:#1}
+		\includegraphics[width=#1\textwidth]{#2}
+		\caption{#3}\label{fig:#2}
 	\end{figure}
 	\FloatBarrier
 }

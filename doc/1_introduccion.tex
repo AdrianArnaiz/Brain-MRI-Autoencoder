@@ -3,24 +3,24 @@
 
 \textit{Not Final Note: \TBD{This color ('TBD' tag in latex) are going to be used in non-final versions of the memory to highlight the non-final sentences or things to be changed in the final version}}.
 
-In this chapter we will introduce the main problematic of the project, basing it on its non-solved tasks and relevance.
+In this chapter we will introduce the main background, and aims of the project, basing it on its non-solved tasks and relevance.
 
 %%% SECTION
 \section{Problem overview and relevance}
 
 \subsection{MRI general problems}
 
-Neuroimaging in psychiatry allows studying the morphological features of the human brain. With the objective of improving the detection systems, diagnostic and treatment, correlations between the morphological features and the neuropsychiatric disorders can be addressed in order to achieve that \cite{abou2006neuroimaging}. If we improve brain magnetic resonance image analysis \ref{fig:figs/MRI_image.jpg}, we will improve the detection systems and treatments for neurological diseases, so the social relevance of the field is very important.
+Neuroimaging in medicine allows studying the morphological features of the human brain. With the objective of improving the detection systems, diagnostic and treatment, correlations between the morphological features and the neurological disorders can be addressed in order to achieve that \cite{abou2006neuroimaging}. If we improve brain magnetic resonance image analysis \ref{fig:figs/MRI_image.jpg}, we will improve the detection systems and treatments for neurological diseases, so the social relevance of the field is very important.
 
 \imagen{figs/MRI_image.jpg}{Brain MRI examples \cite{fotomri}}
 
 The relevance of the project is also shown that there are a lot of branches in which neuroimaging analysis can improve. Machine learning, and more recently Deep Learning and Computer Vision, has irrupted in this field for helping in some tasks: 
 
 \begin{itemize}
-    \item \textbf{Disease detection: segmentation and classification}. There are still several problems to solve in classification problem. Brain MRIs are high dimensional, so we have to recruit big amount of images to properly develop a Machine Learning model that be able to achieve high accuracy. It is very difficult to recruit a large number of images, especially disease images. Even if it performs well, machine learning algorithms have been criticized due to the difficult of extract a clear knowledge of them (black-boxes).  \cite{myronenko20183d}. So a experimental approach is disease detection based on outliers from a normative model Patients with pathologies will be outliers in the distribution build by the normative model (they will be out of normal range defined by the normative model) \cite{marquand2016normative} \cite{mourao2011outlier}.
-    \item \textbf{Data Augmentation}. Lack of data problem can be addressed by Data Augmentation techniques, which look for improve our MRI datasets \cite{GanDataAugment2018}.
+    \item \textbf{Disease detection: segmentation and classification}. There are still several problems to solve in classification and segmentation problems. Brain MRIs are high dimensional, so we have to recruit big amount of images to properly develop a Machine Learning model that be able to achieve high accuracy. It is very difficult to recruit a large number of images, especially disease images. Even if it performs well, machine learning algorithms have been criticized due to the difficult of extract a clear knowledge of them (black-boxes).  \cite{myronenko20183d}. So a experimental approach is disease detection based on outliers from a normative model Patients with pathologies will be outliers in the distribution build by the normative model (they will be out of normal range defined by the normative model) \cite{marquand2016normative} \cite{mourao2011outlier}.
+    \item \textbf{Data Augmentation}. Lack of data problem can be addressed by Data Augmentation techniques, which look for improve our Machine Learning models \cite{GanDataAugment2018}.
     \item \textbf{Improvement of data collection}. Recently high-impact \myurl{https://fastmri.org/}{FastMRI} release from Facebook for improving the speed in MRI scans \cite{fastmri}.
-    \item \underline{\textbf{Image enhancement}}. Clinical evaluation is critical for good disease treatment. Experts and algorithms need good quality images to carry out their tasks. This is the main problem we want to address, so we will explain it deeper in the document \cite{tamada2020review} \cite{myronenko20183d}. 
+    \item \underline{\textbf{Image enhancement}}. Clinical evaluation is critical for good disease treatment. Experts and algorithms need good quality images to carry out their tasks. This is a problem we want to address, so we will explain it deeper in the document \cite{tamada2020review} \cite{myronenko20183d}. 
 \end{itemize}
 
 \subsection{MRI Image enhancement}
@@ -37,7 +37,7 @@ To address this problem many approaches have been done, all of them with some di
 
 There are some approaches to reduce the noise and artifacts in MRI images. An recent and outstanding review is made by D.Tamada \cite{tamada2020review}. In this paper D.Tamada summarize Deep Learning Architectures and applications to MRI. We notice the big relevance of denoiser MRI Deep Learning methods in this review. Although there are many methods, we will focus in brain MRI denoisers. 
 
-There are some Deep Learning Architectures to address in the problem of denoise an brain MRI: Single-scale CNN, Denoising CNN, Autoencoders, and Gan-based architectures. \textbf{We will choose the Autoencoder Architecture for this project}.
+There are some Deep Learning Architectures to address in the problem of denoise an brain MRI: Single-scale CNN, Denoising CNN, Autoencoders, and GAN-based architectures. \textbf{We will choose the Autoencoder Architecture for this project}.
 
 \textbf{Autoencoders} \cite{autoencoder} encode the input into a lower-dimensional space. It extracts important information from the higher-dimensional space, encodes it, and then decodes it to reconstruct the higher-dimensional spacer from the lower one. \TBD{This architecture will be deeply explained in \ref{chapter:theory} in further stages of the project.}
 
@@ -49,9 +49,9 @@ There are some Deep Learning Architectures to address in the problem of denoise 
 In this project, we will design a \textbf{Deep Learning autoencoder for reconstructing brain magnetic resonance images removing noise. In other words, we will train a autoencoder with disease-free neuroimaging data and, with this trained autoencoder, we could define a distribution (or normal range) for the neuroanatomical variability for the illness absence with the main purpose of removing noise. Once trained, the autoencoder should be able to encode a input image and decode it removing noise.}
 \end{tcolorbox}
 
-\textbf{If the main objective of the project is completed, we could research the application oh this model in data augmentation and disease detection fields}. In the case of \textbf{data augmentation}, we will then attempt to reconstruct magnetic resonance images from patients with brain pathologies, with a further view to using the autoencoder to generate 'pathology-free' versions of the said images. In the case of \textbf{disease detection}, we could take an approach like the one in \cite{pinaya2019} (creating a measure for the difference between input and output image and classify it as healthy or control based on this measure). Patients with pathologies will be outliers in the distribution build by the autoencoder (they will be out of normal range defined by the autoencoder) \cite{marquand2016normative} \cite{mourao2011outlier}. This assumption of patients as outliers (based in \cite{mourao2011outlier}) is used in \cite{pinaya2019} for abnormal brain structure detection.
+\textbf{If the main objective of the project is completed, we could research the application of this model in data augmentation and disease detection fields}. In the case of \textbf{data augmentation}, we will then attempt to reconstruct magnetic resonance images from patients with brain pathologies, with a further view to using the autoencoder to generate 'pathology-free' versions of the said images. In the case of \textbf{disease detection}, we could take an approach like the one in \cite{pinaya2019} (creating a measure for the difference between input and output image and classify it as healthy or control based on this measure). Patients with pathologies will be outliers in the distribution build by the autoencoder (they will be out of normal range defined by the autoencoder) \cite{marquand2016normative} \cite{mourao2011outlier}. This assumption of patients as outliers (based in \cite{mourao2011outlier}) is used in \cite{pinaya2019} for abnormal brain structure detection.
 
-Of course, we will need \textbf{data}. For this project, we will use \textbf{T1-weighted MRI images of control subjects} (no disease). As the project is of fairly limited length, we won't need to detect disease as a principal objective, but only learn to reconstruct normal MRI images, so we won't need pathology images by the moment. In addition, we will investigate whether our method of reconstruction can filter out noise and/or artefacts. So, in essence, we will have $n$ 3D MRI volumes ($n$ can be any number greater than 100) from healthy subjects, we will preprocess it (data augmentation based on adding noise, remove parts...), and train our model to reconstruct the source MRI volumes. We will have access magnetic brain resonance images from control subjects for training the autoencoder. This data is arranged from different sources. \TBD{Concrete sources of data images used in the project will be discussed in further stages but we have some clear options in this moment}:
+Of course, we will need \textbf{data}. For this project, we will use \textbf{T1-weighted MRI images of control subjects} (no disease). As the project is of fairly limited length, we won't need to detect disease as a principal objective, but only learn to reconstruct normal MRI images, so we won't need pathology images for this project. In addition, we will investigate whether our method of reconstruction can filter out noise and/or artefacts. So, in essence, we will have $n$ 3D MRI volumes ($n$ can be any number greater than 100) from healthy subjects, we will preprocess it (data augmentation based on adding noise, remove parts...), and train our model to reconstruct the source MRI volumes. We will have access magnetic brain resonance images from control subjects for training the autoencoder. This data is arranged from different sources. \TBD{Concrete sources of data images used in the project will be discussed in further stages but we have some clear options in this moment}:
 
 \begin{itemize}
     \item The \myurl{https://brain-development.org/ixi-dataset/}{IXI dataset} (\TBD{Most likely to be chosen}).
@@ -62,13 +62,13 @@ Of course, we will need \textbf{data}. For this project, we will use \textbf{T1-
 
 \section{Personal motivation}
 
-My personal motivation to carry out the project arises from several factors. My first steps in the world of Machine Learning were in the last year of my career at the University of Burgos. I was lucky enough to collaborate last year with the \myurl{http://admirable-ubu.es/}{ADMIRABLE} research department. The project that I did (in which we continue working) was on the \myurl{https://github.com/AdrianArnaiz/TFG-Neurodegenerative-Disease-Detection}{use of biomarkers extracted from the voice for the construction of classifiers that detect Parkinson's}. The project include topics like \textbf{signal processing}, \textbf{supervised learning}, \textbf{unsupervised learning} and \textbf{transfer learning}. The project was very successful and we had a lot of impact at that time. We are currently in the process of meeting with the Burgos hospital to continue developing the model and the application (project and impact recompilation in Github).
+My personal motivation to carry out the project arises from several factors. My first steps in the world of Machine Learning were in the last year of my career at the University of Burgos. I was lucky enough to collaborate last year with the \myurl{http://admirable-ubu.es/}{ADMIRABLE} research department. The project that I did (in which we continue working) was on the \myurl{https://adrianarnaiz.github.io/TFG-Neurodegenerative-Disease-Detection/}{use of biomarkers extracted from the voice for the construction of classifiers that detect Parkinson's disease}. The project include topics like \textbf{signal processing}, \textbf{supervised learning}, \textbf{unsupervised learning} and \textbf{transfer learning}. The project was very successful and we had a lot of impact at that time. We are currently in the process of meeting with the Burgos hospital to continue developing the model and the application (project and impact recompilation in \myurl{https://github.com/AdrianArnaiz/TFG-Neurodegenerative-Disease-Detection}{Github}).
 
-This project has fully opened me the doors the world of artificial intelligence and machine learning, which is a field of knowledge that I love. I have always liked math, problem-solving and since I started my career I love programming. Therefore, I find this field the ideal that aligns with my tastes and interests. As i said before, I have done lot of jobs with supervised learning or data analysis, but only with tabular data sets or text-datasets, so I wanted to break in the world of image processing and Deep Learning.
+This project has fully opened me the doors the world of artificial intelligence and machine learning, which is a field of knowledge that I love. I have always liked math, problem-solving and since I started my career I love programming. Therefore, I find this field the ideal that aligns with my tastes and interests. As I said before, I have done lot of jobs with supervised learning or data analysis, but only with tabular data sets or text-datasets, so I wanted to break in the world of image processing and Deep Learning.
 
 Then I worked half year in Ernst and Young, developing Machine Learning systems for RPA tasks (classify emails at Telefónica, Chatbot for Maxium or Fuzzy Name Matching for Xunta de Galicia).
 
-In addition, I believe that the application of AI to medicine is one of the fields that may be of greater general interest to society. By advancing in the speed and quality of medical diagnoses and treatments, it will be possible to achieve health of higher quality, speed and accessibility for all. Also, computer vision and deep learning have helped to achieve the big advances in this field nowadays. 
+In addition, I believe that the application of AI to medicine is one of the fields that may be of greater general interest to society. By advancing in the speed and quality of medical diagnoses and treatments, it will be possible to achieve health of higher quality, speed and accessibility for all. Also, computer vision and deep learning have helped to achieve big advances in this field nowadays. 
 
 
 \section{State of art: related works}
@@ -79,7 +79,7 @@ The world relevance and impact of this problem is also shown in the related arti
 \begin{itemize}
     \item Walter Pinaya, 2018 \cite{pinaya2019}:
     
-    Classic methods and approaches based on sMRI can't get a good performance in abnormal brain structural detection because neuroanatomical alterations in neuropsychiatric disorders are commonly subtle and spatially distributed. Another approach based on Machine Learning methods could improve performance. ML algorithms are sensitive to these subtle characteristics. The downside of this road is the need for a large amount of image data (control and disease) and that the models are black-boxes with no information on the critical characteristics used for the decision. With this Deep Autoencoder, they put this matter up for discussion.
+    Classic methods and approaches based on sMRI (structural magnetic resonance imaging) can't get a good performance in abnormal brain structural detection because neuroanatomical alterations in neurological disorders can be subtle and spatially distributed. Another approach based on Machine Learning methods could improve performance. ML algorithms are sensitive to these subtle characteristics. The downside of this road is the need for a large amount of image data (control and disease) and that the models are black-boxes with no information on the critical characteristics used for the decision. With this Deep Autoencoder, they put this matter up for discussion.
     
     In this project, they address the problem of creating a normative model using a deep autoencoder trained with control subjects. With this autoencoder defining a distribution for control patients, they define a deviation metric to measure the neuroanatomical deviation in patients. Patients with some disorder should be outliers in this distribution.
     
@@ -89,18 +89,19 @@ The world relevance and impact of this problem is also shown in the related arti
         \item 3 hidden layers with SELUs activation function.
         \item Output layer with Linear activation function.
         \item Loss function: MSE from reconstructed and original image + cross-entropy for age + cross-entropy for years + Unsupervised cross-covariance.
-        \item 2000 epochs and 2000 iterations.
-        \item Adam with adaptative learning rate.
+        \item 2000 epochs.
+        \item ADAM optimizer (adaptive moment estimation) with adaptative learning rate.
         \item 64 samples mini-batches.
         \item Transformation of input image:
         \begin{itemize}
             \item Add Gaussian noise (0, 0.1).
             \item Feature scaling (normalization).
         \end{itemize}
-        \item One-hot encoding for \texttt{sex} and \texttt{year} labels.
+        \item One-hot encoding for \texttt{sex} and \texttt{age} labels.
     \end{itemize}
     
     \item \TBD{We made a recompilation of papers reviewed in Table 1 of D. Tamada, 2020 \cite{tamada2020review} and by our own, with some removals and additions based in our goal of the project (see \ref{table:paper_overview}). In further stages we will explain deeply some papers from the table \ref{table:paper_overview}}. From the table of D. Tamada we only obtain 1 autoencoder study \cite{bermudez2018t1autoencoder}, 3 sCNN and DnCNN approaches \cite{kidoh2019scnnt1} \cite{ganHR3d} \cite{dncnnnoise2noise} and 1 GAN study. The other 5 papers have been compiled by our own (Autoencoder based: \cite{pinaya2019} \cite{gondara2016medicalautoencoder} \cite{superresolution} \cite{fuzzyautoencoder}, GAN-Autoencoder-based: \cite{wganautoencoder}).
+    \item \TBD{In next stage (state of art research), we will research the state of art with new techniques and frameworks. \myurl{https://www.connectedpapers.com/}{Connected Papers} is a network science framework to improve the search of papers. There are also other platforms like \myurl{https://paperswithcode.com/}{Papers With Code} and \myurl{https://distill.pub/}{Distill} that improve the experience of article discovering and article visualization-interaction.}
 \end{itemize}    
 
 \begin{table}[!ht]
