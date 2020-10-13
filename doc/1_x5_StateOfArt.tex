@@ -1,0 +1,191 @@
+\chapter{State of art: related works}
+\label{chapter:stateofart}
+
+\section{Overview}
+The world relevance and impact of this problem is also shown in the related articles of this subject. The state of art of Deep Learning applied to brain MRI shows the relevance of this field. As we discussed in the introduction, in section \ref{chapter:introduccion}, different deep learning techniques have been used to address the problems derived from brain MRI images: \textbf{classification healthy/disease, tumor segmentation, optimize data acquisition, data augmentation and image enhancement} are the principal ones. 
+
+\begin{tcolorbox}
+Nevertheless, we must highlight that all of this problems have common points of works. One of them is the purpose of our project: \textbf{learn MRI representation for reconstruction}.
+\end{tcolorbox}
+
+The advance in some of the questions leads to the advance in another. \textbf{Image reconstruction}, which is a mainly sub-problem of image enhancement, could help to achieve better results in:
+\begin{itemize}
+    \item \textbf{Data acquisition}
+    \begin{itemize}
+        \item Reconstruct the image from less data collected: faster scanning process \cite{fastmri}.
+    \end{itemize}
+    
+    \item \textbf{Disease detection and segmentation}
+    \begin{itemize}
+        \item Unsupervised Anomaly Detection: detect diseases with non-labeled data: reconstruction of the disease image differs more than the pathology-free one \cite{pinaya2019}.
+        \item Tumor segmentation (widely known as BraTS \cite{brats2014}): encode for extract deep image features and decoder for reconstruction of dense segmentation mask \cite{myronenko20183d}.
+    \end{itemize} 
+    
+    \item \textbf{Data Augmentation}
+    \begin{itemize}
+        \item Construction of pathology-free image from abnormal and viceversa \cite{2020inpainting} (i.e. lesion inpainting).
+        \item Artificial MRI Generation \cite{GanDataAugment2018} \myurl{https://paperswithcode.com/paper/generation-of-3d-brain-mri-using-auto}{\cite{kwon2019gangeneration}} .
+    \end{itemize}
+    
+    \item \textbf{Image Enhancement}
+    \begin{itemize}
+        \item Reconstruction of cropped parts.
+        \item Reconstruction without noise and artifacts \cite{superresolution} \cite{bermudez2018t1autoencoder}, \cite{gondara2016medicalautoencoder}, \cite{wganautoencoder}.
+        \item Definition enhancement: from low resolution to high resolution \cite{ganHR3d} \cite{superresolution}.
+    \end{itemize}
+\end{itemize} 
+
+We want to emphasize the actual relevance of this project. Solving MRI problems using Deep Learning isn't just about how to apply Deep Learning to another field. It is not just a Deep Learning experiment to demonstrate the power of this method. Solving problems with MRI diagnostics (classification, segmentation), MRI quality (MRI enhancement, data augmentation), or MRI acquisition are cutting edge issues in both the field of Computer Science and Healthcare (neuroimaging, neurological analysis, etc.). 
+
+
+
+\section{Related works}
+
+We realize this in the overwhelming number of articles using different Deep Learning architectures for solving all kinds of problems with MRI. We will discuss papers addressing different problems but with one similarity: use of image reconstruction in some part of the process (preferably by using autoencoder-based solution). \textbf{However, the main purpose for this project is to apply this reconstruction techniques for noise reduction (image enhancement) and data augmentation (lesion inpainting).}
+
+The main evidence of the big relevance and collaboration between Deep Learning and MR imaging is \textbf{FastMRI by Facebook AI}. In fact, lately, the focus is on \textbf{improving MRI acquisition}, with techniques based on collecting fewer data and using \underline{reconstruction} techniques with Deep Learning with the aim of improving image quality and acquisition speed. The high-impact in the academic field of these kind of studies is based on Facebook AI works. Facebook AI is focused on \textbf{accelerating MR imaging} with AI, and it is his main goal in healthcare nowadays. They created \myurl{https://fastmri.org/}{fastMRI} \cite{fastmri}, a set of models working with some benchmark datasets in order to accelerate the MR imaging acquisition. It is open source, and you can participate in the \myurl{https://fastmri.org/submission_guidelines/}{challenge} with data from New York University. Recently, Facebook and \myurl{https://sites.google.com/view/med-neurips-2020}{NeurIPS} announced that the best models and projects presented for this purpose, even from groups outside Facebook, will be invited to NeurIPS, one of the most important conferences on Neural Information Processing Systems.
+
+%% NVIDIA tumor segmentation
+To continue with the different studies using reconstruction methods for distinct purposes, we describe the use of reconstruction for helping \textbf{Tumor Segmentation}. This is another main problem in the state of the art. There is a global academic challenge using labeled brain tumor MRI for BRAin Tumor Segmentation called \textbf{BRATS} \cite{brats2014}. This competition is compound by a MRI dataset from T1, T1c, T2 and FLAIR MRI and the goal is make the segmentation of the distinct parts of the tumor. Using this data as a \myurl{https://paperswithcode.com/task/brain-tumor-segmentation}{benchmark}, lots of different groups are making experiments each year to improve the results. One of these studies using \underline{reconstruction} techniques is the current best outcome for BRAST 2018: \myurl{https://paperswithcode.com/paper/3d-mri-brain-tumor-segmentation-using}{\textbf{A. Myronenko} \cite{myronenko20183d}}. Although their objective is the 3D segmentation of tumors, they use a curious architecture, shown in figure \ref{fig:figs/architecture_myronenko.PNG}, that incorporates an encoder and two decoding branches: one for the creation of tumor segmentation masks and the other for the reconstruction of images. This branch of image reconstruction is only used during training as an additional guide to regularize  the encoder part. The encoder is made by \textbf{ResNet} blocks (Group Norm+ReLu+Conv). The decoder is a \textbf{variational autoencoder} (VAE) made of the distribution layer and deconvolutional upsampling layers with Group Normalization and ReLu.
+2 more parts are incorporated in their main loss function for tumor segmentation: Mean square error and Kullback–Leibler divergence of the reconstruction branch.
+
+\imagen{figs/architecture_myronenko.PNG}{Architecture of ResNet-VAE-based network of A. Myronenko. \cite{myronenko20183d}}
+
+%% Classification and pinaya - Simple convolutional autoencoder -semisuepr
+Another problem is to \textbf{classify whether an image belongs to a control or a patient}. A recent approach is based on the construction of normative models \cite{marquand2016normative}, and , therefore, the image \underline{reconstruction} based in this normative model. \textbf{Pinaya et al}. \cite{pinaya2019} use this technique to identify abnormal patterns in neuropshychiatric disorders towards achieving \textbf{unsupervised anomaly detection}, so we don't need labeled images from disease data.
+Classic methods and approaches based on \textbf{sMRI} (structural magnetic resonance imaging) can't get a good performance in abnormal brain structural detection because neuroanatomical alterations in neurological disorders can be subtle and spatially distributed. Another approach based on Machine Learning methods could improve performance because algorithms are sensitive to these subtle characteristics. The downside of this road is the need for a large amount of image data (control and disease) and that the models are black-boxes with no information on the critical characteristics used for the decision. They developed a \textbf{Deep semi-supervised Autoencoder}, which put unsupervised anomaly detection up for discussion.
+The goal of that study is build an autoencoder which encode the structure of control brains. It means the autoencoder learn the normal distribution for healthy brains and the abnormal MR images would be outliers in that distribution. With this autoencoder defining a distribution for control patients, they define a \textbf{deviation metric} to measure the neuroanatomical deviation in patients. Patients with some disorder should be outliers in this distribution. The architecture and technique used in the experiment is the following:
+\begin{itemize}
+\item Architecture
+    \begin{itemize}
+        \item Semi-supervised autoencoder: reconstruction of the image and prediction of age and sex.
+        \item 3 hidden layers with SELUs activation function.
+        \item Output layer with Linear activation function.
+        \item Loss function: MSE from reconstructed and original image + cross-entropy for age + cross-entropy for years + Unsupervised cross-covariance.
+        \item 2000 epochs.
+        \item ADAM optimizer (adaptive moment estimation) with adaptative learning rate.
+        \item 64 samples mini-batches.
+    \end{itemize}
+\item Transformation of input data:
+    \begin{itemize}
+        \item Add Gaussian noise to image (0, 0.1).
+        \item Feature scaling (normalization).
+        \item One-hot encoding for \texttt{sex} and \texttt{age} labels.
+    \end{itemize}
+\end{itemize}
+
+%% Contar inpaint lessons autoencoder
+We continue with a special case: \textbf{lesion inpainting} \cite{2020inpainting}. It can be seen as a \textbf{data augmentation} task (\underline{reconstructing} ‘pathology-free’ versions from patients with any brain disease). In the work of \textbf{José V. Majón et. al.} \cite{2020inpainting} the medial purpose is \textbf{the improvement of the behavior of current brain image analysis pipelines}.  These pipelines are not robust to brain MR images with lesions. For example, a task such as brain part segmentation decreases its accuracy when dealing with lesions. They proposed a \textbf{3D UNet} like network to map the image with lesion to the inpainted image (target). The encoder is made by 3 blocks of a 3D Convolutional Layer with ReLU activation, Batch Normalization and max-pooling. For the decoder they used same architecture but upsampling instead of max-pooling and, in the last step, a  tri-linear interpolation layer followed by a 3D convolution layer (with 8 filters) plus a ReLU and Batch normalization layers for upsampling the image. We can see the diagram pf the architecture in figure \ref{fig:figs/architecture_manjon.PNG}. Everything was trained with MSE loss function. They use lesion masks to generate artificial training data. The use control cases masked out with lesion masks using the software lesionBrain \cite{lesionBrain}.
+
+\imagen{figs/architecture_manjon.PNG}{Architecture of network of J. V. Manjon et. al. \cite{2020inpainting}}
+
+
+Besides of all of these principal studies and objectives, there are so many more. Théo Estienne et. al. \cite{otherBraTS2020} in 2020 realize a project based in the study from A. Myronenko \cite{myronenko20183d} which we explained before. They also research Deep Learning architectures for tumor segmentation and use a autoencoder-based network with 2 decoder branches: one for tumor segmentation an another for reconstruction. This last branch is only used for encoder-regularization. They use a fully convolutional VNet architecture, with convolutional layers, ReLU activation function and a intra-block residual
+connection with the output of the first activated convolution of the corresponding block. They use also direct connections from encoder to decoder part. 
+
+We discover another study from \myurl{https://paperswithcode.com/paper/a-convolutional-autoencoder-approach-to-learn}{Evan M. Yu et. al. \cite{learnvolrepreCODE}} in which they try to learn volumetric representations from different parts of brain structure. They also use an autoencoder framework.They architecture is composed by 2 components: a spatial transformer network (STN) and a convolutional autoencoder (CAE). The autoencoder is a kind of ResNet-based one, because it uses residual blocks with skip connections, instance normalization and Leaky ReLU activation function.
+
+In order to finalize with the review of the studies of reconstruction applications in MRI, we want to explain one last paper. This work is not focused in MRI, but it achieves very good performance in many tasks like restoration, denoising, super-resolution or image inpainting. \myurl{https://paperswithcode.com/paper/image-restoration-using-convolutional-auto}{XJ. Mao et all \cite{superresolution}} published in 2016 an study about CAE with symetric skip-connections to address those objectives. They also use a residual based network which they call RED-Net. The main characteristics of this network are the skip connections (in which one layer from the encoder are added up to its symmetric layer in the decoder) and the lack of pooling layers. They don't use pooling layers due to pooling discards useful image details that are essential for these tasks. They use MSE loss function. Peak Signal-to-Noise Ratio
+(PSNR) and Structural SIMilarity (SSIM) index are calculated for evaluation.
+
+The studies and tasks just explained are the prominent and recent ones but there are other areas and analysis in which MRI restoration could help. Some of them are survival prediction \cite{AnexoReviewAditional}, disease progression \cite{AnexoProgression} or brain connectivity analysis   \cite{AnexoConnectivity}.
+
+
+
+\section{Network architectures for images}
+%% Contar u-net, resnet VGG, DenseNet, variational
+
+The encoder part of the autoencoder should work like a feature extractor, so we can research the most known Deep Learning Architectures for images in order to use the same architecture or realize transfer learning (with frozen weights or not).
+
+\TBD{Should i explain architectures like Alexnet, Resnet, Unet, VGG, Variational autoencoders and normal convolutional autoencoders?} 
+
+\TBD{Are the VAE usefull for us or is it only usefull for generative models?} 
+
+
+\section{Summary of related works}
+
+We have compiled some recent and prominent works in which they use reconstruction methods for different purposes. We have generally explained their architectures and approaches.
+
+%% Arquitecturas
+Although all the collected architectures are based on autoencoders, it has its differences in how the autoencoder is built. First of all, it differs in the main architecture of the blocks of the autoencoder. Different kind of networks like \textbf{ResNet, UNet, VGG, Simple CAE} or \textbf{AlexNet}. Also, in some of them use the Variational Autoencoder approach, even in \cite{myronenko20183d} combine ResNet and VAE. 
+Furthermore, there are additional architecture caracteristic in which studies differ. Some of them use \textbf{skip connections} which offers 2 advantages: They allow the signal to backpropagate directly to the lower layers and thus address the problem of gradient disappearance, facilitating deep network training and consequently achieving improvements in restoration performance. Second, these skip connections pass the image details from the convolutional layers to the deconvolutional layers, which is beneficial for getting the clean image reconstructed \cite{superresolution}. In conclussion with the architecture research, most of them uses Residual Networks or UNet networks, and recently the performance is improved by adding skip connections.
+
+%% Contar diferentes loss y medidas: mse, psnr, correlacion, kl
+%% Inpainted y super resolution usan MSE, alguno mas tb
+The \textbf{loss function} used is also a critical issue. Most of the studies researched use pixel-wise $MSE$, which implicit improves the evaluation metrics $PSNR$ and $SSIM$. In addition, other metrics are also used. $KL divergence$ is added to loss function when VAE is used or $cross-entropy$ and $cross-covariance$ are added when semi-supervised autoencoder is used \cite{pinaya2019}. However, we will discuss in this project the benefits of using $PSNR$ or $SSIM$ directly in loss function. 
+
+%% Contar diferentes preprocesados
+\textbf{Brain MRI preprocessing} differs depending on the objective. First of all, some of the studies use the images of the dataset straight like the \textbf{target output} of the network. Other works enhance the image quality and contrast before sending it like target output. 
+To continue, other preprocessing can be made when sending brain MRI to the input layers. We can realize \textbf{data augmentation} in real time adding Gaussian Noise or cropping some parts (fixed rectangles or with lesion masks like lessionBrain \cite{lesionBrain}).
+\textbf{Downsampling} the input images could be also useful to reduce the number of parameters of the network. So the resolution of the input image should be balanced between usability (if it is very small is not useful at all) and trainability.  The \textbf{normalization of pixels} (values from 0 to 1) is very important for a neural network.  Inputs in the range [0, 1] make easier the network train.
+
+We are going to work with \textbf{2D slices of 3D brain MRI volumes}. It means that  in our project we are going to reconstruct 2D brain MR images. In order to get 2D images from volumes, we have to get slices, as we can see in image \ref{fig:figs/xyz_slice.PNG}. We can get many 2D images from one brain volume. So, in the  preprocessing step, we firstly must choose what profile we are going to work with. Main step in choosing 2D slices is not that, main step is choose slices which retrieves relevant information. A volume can be seen as a 3D head and some slices (i.e. from the sides) can not retrieve relevant information, because it will retrieve noise or bone parts, but it don't show information about brain structure. We can see this fact in the image \ref{fig:figs/xyz_slice_bad.PNG}, in which is shown the same volume of the image \ref{fig:figs/xyz_slice.PNG} but different slice. In order to get images with relevant information, we have recompiled 3 main methods in the state of art: \textbf{get fixed slices from all volumes, use a software tool like FreeSurfer (used in \cite{pinaya2019}) to measure the thickness of the brain in the slice or develop ourselves a computer vision tool to evaluate the thickness (with opencv)  }. Although the first approach seems the simplest, it is the most used for its good results.
+
+\imagen{figs/xyz_slice.PNG}{2D slices from brain volume IXI ID 002. Different profiles can be seen. Source: myself}
+
+\imagen{figs/xyz_slice_bad.PNG}{2D slices from IXI ID 002. Slices from volume sides. Source: myself}
+
+With this research of the art, we are ready to develop the next stages our approach to brain MRI reconstruction. We emphasize that the paper-discovery techniques used in this research are improved by new frameworks described in section \ref{section:papers_discovery}.
+
+Finally, we made a recompilation of papers reviewed in Table 1 of D. Tamada, 2020 \cite{tamada2020review} and by our own, with some removals and additions based in our goal of the project (see \ref{table:paper_overview}). We have just deeply explained some of them. From the table of D. Tamada we only obtain 1 autoencoder study \cite{bermudez2018t1autoencoder}, 3 sCNN and DnCNN approaches \cite{kidoh2019scnnt1} \cite{ganHR3d} \cite{dncnnnoise2noise} and 1 GAN study.  The other papers have been compiled by our own (Autoencoder based: \cite{pinaya2019} \cite{myronenko20183d} \cite{gondara2016medicalautoencoder} \cite{superresolution} \cite{fuzzyautoencoder} \cite{learnvolrepreCODE}, GAN-Autoencoder-based: \cite{wganautoencoder}).
+
+
+
+\begin{table}[!ht]
+    \setlength\extrarowheight{2pt} % for a bit of visual "breathing space"
+    \rowcolors {2}{gray!15}{}
+    \begin{tabularx}{\textwidth}{C C C}
+    \hline
+        \textbf{Purpose} & \textbf{Year, Authors} & \textbf{Network} \\
+        \hline
+        
+        \rowcolor{orange!10}
+        \multicolumn{3}{c}{\textbf{Autoencoders}}\\
+        
+        \hline
+        
+        Identify brain abnormal structural patterns & 2018, W. Pinaya, et al \cite{pinaya2019} & \textbf{Semi-supervised autoencoder with SeLU and loss MSE+cross-variance} \\
+        
+        3D Tumor segmentation & 2018, A. Myronenko \cite{myronenko20183d} [Code available] & \textbf{VAE for regularization to encoder (ResNet like)} \\
+        
+         Lesion inpainting & 2020, J. V. Manjón et al \cite{2020inpainting} & \textbf{3D UNet autoencoder with skip-connections and upsampling at end} \\
+         
+         General image denoising and super resolution & 2016, XJ. Mao et al \cite{superresolution} [Code available] & \textbf{Residual CAE with symmetric skip connections} \\
+        
+        Learn Brain volumetric representation &  2018, Evan  M.  Yu  et.   al. \cite{learnvolrepreCODE} [Code available] & \textbf{STN+Residual CAE with skip connections, IN and LReLU} \\
+        \hline
+        
+        Denoising for T1 weighted brain MRI & 2018, C. Bermudez, et al \cite{bermudez2018t1autoencoder} & \textbf{Autoencoder with skip connections} \\
+        
+        Medical image denoise & 2016, L. Gondara, et al \cite{gondara2016medicalautoencoder} &\textbf{Convolutional denoising autoencoder} \\
+        
+        Brain MRI denoise & 2019, N. Chauhan et al \cite{fuzzyautoencoder} & \textbf{Convolutional denoising autoencoder with Fuzzy Logic filters} \\
+
+        \hline
+        \rowcolor{orange!10}
+        \multicolumn{3}{c}{\textbf{sCNN and DnCNN}}\\
+        \hline
+
+        Denoising for T1, T2 and FLAIR brain images & 2018, M. Kidoh, et al \cite{kidoh2019scnnt1} & Single-scale CNN with DCT \\
+        
+        Motion artifact reduction for brain MRI & 2018, P. Johnson, et al \cite{scnnmotion} & Single-scale CNN\\
+        
+        Denoising for multishot DWI & 2020, M Kawamura et al \cite{dncnnnoise2noise} & DnCNN with Noise2Noise \\
+        
+        \hline
+        \rowcolor{orange!10}
+        \multicolumn{3}{c}{\textbf{GAN}}\\
+        \hline
+        
+        Motion artifact reduction for brain MRI & 2018 BA. Duffy, et al \cite{ganHR3d} & GAN with HighRes3dnet as generator \\
+        
+        Denoise 3D MRI & 2019, M. Ran et al \cite{wganautoencoder} & \textbf{Wasserstein GAN with Convolutional Autoencoder generator} \\
+ 
+    \hline
+    \end{tabularx}
+    \caption{Overview of studies for reconstruction based in Table 1 from D. Tamada \cite{tamada2020review} (In bold the autoencoder related architecture)}
+    \label{table:paper_overview}
+\end{table}
+
+\FloatBarrier
+

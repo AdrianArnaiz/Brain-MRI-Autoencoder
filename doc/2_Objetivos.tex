@@ -3,17 +3,15 @@
 
 In this chapter, we will establish the aims of the project. We have just spoken about the problem to be solved. So now we have to enumerate the concrete objectives of the project. 
 
-\TBD{The objectives will be temporal and will be redefined in further stages.}
-
-
 \section{Hypothesis}
 
-\textbf{We will build an auto encoder for reconstructing and denoise T1-weighted brain MRI. It will remove noise and will learn the underlying structure of the images in a lower dimensional space, and will reconstruct the image based on this low dimensional representation.}
+\textbf{We will build an autoencoder for reconstructing T1-weighted brain MRI. It will learn how to encode the underlying structure healthy brains in a lower-dimension space, and reconstruct the MRI from this space. Image quality will be improved reducing noise and artifacts and also could be used for lesion inpainting.}
 
 \section{Primary aims}
 
 \begin{itemize}
-    \item To build a \textbf{noise-reducing autoencoder} that gets good results with control \textbf{T1-weighted brain MRI}: given a T1-WMRI, the autoencoder will return the same image as equal as we can to the original, but removing the noise.
+    \item To build a \textbf{autoencoder} that gets good results with control \textbf{T1-weighted brain MRI}: given a "clean" T1-WMRI, the autoencoder will return the same image as equal as we can to the original.
+    \item Due to the nature of the autoencoder train, it will be able to remove noise or reconstruct hidden parts of the input MRI (making data-augmentation in real time).
     \item Research a good autoencoder architecture and parameters (loss function, batch-norm or not batch-norm, regularization, etc).
     \item Establish a good brain MRI pre-processing.
 \end{itemize}
@@ -23,6 +21,7 @@ In this chapter, we will establish the aims of the project. We have just spoken 
 \begin{itemize}
     \item Develop the Deep Learning code using one of the most relevant framework, Python, and one of the best-known libraries: \TBD{Tensorflow, Keras, or Pytorch (To Be chosen in further stages)} .
     \item Use an agile methodology: SCRUM. This methodology should be used in the project. We will use the Zenhub tool of Github as a helper in the project management.
+    \item Research the reconstruct applications for image enhancement, disease detection or data augmentation.
 \end{itemize}
 
 These next objectives will be addressed if the primary ones are reached. We could see these aims like a extra for the project. If we achieved good performance in this task, we would research about how to apply this solution to disease detection or data augmentation.

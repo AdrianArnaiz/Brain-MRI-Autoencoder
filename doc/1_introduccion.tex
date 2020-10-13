@@ -17,15 +17,17 @@ Neuroimaging in medicine allows studying the morphological features of the human
 The relevance of the project is also shown that there are a lot of branches in which neuroimaging analysis can improve. Machine learning, and more recently Deep Learning and Computer Vision, has irrupted in this field for helping in some tasks: 
 
 \begin{itemize}
-    \item \textbf{Disease detection: segmentation and classification}. There are still several problems to solve in classification and segmentation problems. Brain MRIs are high dimensional, so we have to recruit big amount of images to properly develop a Machine Learning model that be able to achieve high accuracy. It is very difficult to recruit a large number of images, especially disease images. Even if it performs well, machine learning algorithms have been criticized due to the difficult of extract a clear knowledge of them (black-boxes).  \cite{myronenko20183d}. So a experimental approach is disease detection based on outliers from a normative model Patients with pathologies will be outliers in the distribution build by the normative model (they will be out of normal range defined by the normative model) \cite{marquand2016normative} \cite{mourao2011outlier}.
-    \item \textbf{Data Augmentation}. Lack of data problem can be addressed by Data Augmentation techniques, which look for improve our Machine Learning models \cite{GanDataAugment2018}.
-    \item \textbf{Improvement of data collection}. Recently high-impact \myurl{https://fastmri.org/}{FastMRI} release from Facebook for improving the speed in MRI scans \cite{fastmri}.
+    \item \textbf{Disease detection: segmentation and classification}. There are still several problems to solve in classification and segmentation problems. Brain MRIs are high dimensional, so we have to recruit big amount of images to properly develop a Machine Learning model that be able to achieve high accuracy. It is very difficult to recruit a large number of images, especially disease images. Even if it performs well, machine learning algorithms have been criticized due to the difficult of extract a clear knowledge of them (black-boxes).  \cite{myronenko20183d}. So a experimental approach is disease detection based on outliers from a normative model. Patients with pathologies will be outliers in the distribution build by the normative model (they will be out of normal range defined by the normative model) \cite{marquand2016normative} \cite{mourao2011outlier}. It could be seen as an unsupervised anomaly detection technique, in which we don't need labeled data.
+    \item \textbf{Data Augmentation}. Lack of data problem can be addressed by Data Augmentation techniques, which look for improve our Machine Learning models \cite{GanDataAugment2018} and robustness of pipelines \cite{2020inpainting}.
+    \item \textbf{Improvement of data acquisition}. Recently high-impact \myurl{https://fastmri.org/}{FastMRI} release from Facebook for improving the speed in MRI scans \cite{fastmri}.
     \item \underline{\textbf{Image enhancement}}. Clinical evaluation is critical for good disease treatment. Experts and algorithms need good quality images to carry out their tasks. This is a problem we want to address, so we will explain it deeper in the document \cite{tamada2020review} \cite{myronenko20183d}. 
 \end{itemize}
 
+However, some of these problems overlap. The advance in some of them leads to the advance in another. \textbf{Image reconstruction}, which is a mainly sub-problem of image enhancement, could help to achieve better results in data acquisition (i.e. reconstruct the image from less data collected), unsupervised anomaly detection (i.e. reconstruction of the disease image differs more than the pathology-free one), data augmentation (i.e. reconstruction from patholohy-free to abnormal and viceversa) and, obviusly, image enhancement (i.e. reconstruction of cropped parts or reconstruction without noise and artifacts). \textbf{Thus, the main purpose for this project is to apply this reconstruction techniques for noise reduction (image enhancement) and data augmentation (lesion inpainting),} being another applications discussed for future work.
+
 \subsection{MRI Image enhancement}
 
-\textbf{We are going to focus on the problem of image enhancement, specifically the problem of noise removal}, see \ref{fig:figs/Denoised_MRI.jpeg}. If we achieved good performance in this task, we would research about how to apply this solution to disease detection or data augmentation.
+\textbf{We are going to focus on the problem of image enhancement, specifically the problem of image reconstruction}. With this reconstruction technique, the noise and artifacts will be reduced, see \ref{fig:figs/Denoised_MRI.jpeg}, and the image quality will be improved. If we achieved good performance in this task, we would research about how to apply this solution to unsupervised disease detection or data augmentation.
 
 \imagen{figs/Denoised_MRI.jpeg}{Noised and Denoised MRI \cite{fotoDenoisedMri}}
 
@@ -33,9 +35,9 @@ Magnetic resonance images are collected with MR scans and the scan process, even
 
 \subsection{Noise and artifact reduction with Deep Learning}
 
-To address this problem many approaches have been done, all of them with some disadvantages. Advanced filtering methods \cite{filtermeth12} or retrospective correction approaches have been proposed, but, with the rise of \textbf{Deep Learning}, other methods have been proposed that take advantage of this approach. Deep Learning is very powerful in high-dimensional spaces and non-linear problems, so it can make a better job in feature extraction or information compression. Therefore, it will have good performance with images, where the \textbf{underlying structure of the images will be captured and foreign elements such as noise or artifacts can be eliminated}. 
+Noise and artifact reduction is one of the main principal problems which are classically solved with \underline{reconstruction} techniques. To address this problem many approaches have been done, all of them with some disadvantages. Advanced filtering methods \cite{filtermeth12} or retrospective correction approaches have been proposed, but, with the rise of \textbf{Deep Learning}, other methods have been proposed that take advantage of this approach. Deep Learning is very powerful in high-dimensional spaces and non-linear problems, so it can make a better job in feature extraction or information compression. Therefore, it will have good performance with images, where the \textbf{underlying structure of the images will be captured and foreign elements such as noise or artifacts can be eliminated through a noise-free reconstruction}. 
 
-There are some approaches to reduce the noise and artifacts in MRI images. An recent and outstanding review is made by D.Tamada \cite{tamada2020review}. In this paper D.Tamada summarize Deep Learning Architectures and applications to MRI. We notice the big relevance of denoiser MRI Deep Learning methods in this review. Although there are many methods, we will focus in brain MRI denoisers. 
+There are some approaches to reduce the noise and artifacts in MRI images. An recent and outstanding review is made by D.Tamada \cite{tamada2020review}. In this paper D.Tamada summarize Deep Learning Architectures and applications to MRI. We notice the big relevance of denoiser MRI Deep Learning methods in this review. Although there are many methods, we will focus in brain MRI denoisers. A compilation of articles related with noise reduction is made in table \ref{table:paper_overview}.
 
 There are some Deep Learning Architectures to address in the problem of denoise an brain MRI: Single-scale CNN, Denoising CNN, Autoencoders, and GAN-based architectures. \textbf{We will choose the Autoencoder Architecture for this project}.
 
@@ -46,16 +48,18 @@ There are some Deep Learning Architectures to address in the problem of denoise 
 \subsection{Our approach}
 
 \begin{tcolorbox}
-In this project, we will design a \textbf{Deep Learning autoencoder for reconstructing brain magnetic resonance images removing noise. In other words, we will train a autoencoder with disease-free neuroimaging data and, with this trained autoencoder, we could define a distribution (or normal range) for the neuroanatomical variability for the illness absence with the main purpose of removing noise. Once trained, the autoencoder should be able to encode a input image and decode it removing noise.}
+In this project, we will design a \textbf{Deep Learning autoencoder for reconstructing brain magnetic resonance images reducing noise/artifacts and inpainting lessons, and study its further implications and applications like  data augmentation, disease detection or data acquisition improvement. In other words, we will train a autoencoder with disease-free neuroimaging data and, with this trained autoencoder, we could define a distribution (or normal range) for the neuroanatomical variability for the illness absence with the potential purpose of removing noise or look for diseases. Once trained, the autoencoder should be able to encode a input image and reconstruct it without the noise or lesson.}
 \end{tcolorbox}
 
-\textbf{If the main objective of the project is completed, we could research the application of this model in data augmentation and disease detection fields}. In the case of \textbf{data augmentation}, we will then attempt to reconstruct magnetic resonance images from patients with brain pathologies, with a further view to using the autoencoder to generate 'pathology-free' versions of the said images. In the case of \textbf{disease detection}, we could take an approach like the one in \cite{pinaya2019} (creating a measure for the difference between input and output image and classify it as healthy or control based on this measure). Patients with pathologies will be outliers in the distribution build by the autoencoder (they will be out of normal range defined by the autoencoder) \cite{marquand2016normative} \cite{mourao2011outlier}. This assumption of patients as outliers (based in \cite{mourao2011outlier}) is used in \cite{pinaya2019} for abnormal brain structure detection.
+We want to highlight one main fact: the autoencoder do not remove noise or inpaint a lessons because it is trained like a denoiser or a image-filler. It do reconstruct MRI without noise or lessons because it is trained only with 'clean' and control MRI like target images, so it does not know how to reconstruct noise or lessons. Therefore, once the MRI is encoded in the latent space, the decoder will reconstruct a control clean MRI from this latent space.
 
-Of course, we will need \textbf{data}. For this project, we will use \textbf{T1-weighted MRI images of control subjects} (no disease). As the project is of fairly limited length, we won't need to detect disease as a principal objective, but only learn to reconstruct normal MRI images, so we won't need pathology images for this project. In addition, we will investigate whether our method of reconstruction can filter out noise and/or artefacts. So, in essence, we will have $n$ 3D MRI volumes ($n$ can be any number greater than 100) from healthy subjects, we will preprocess it (data augmentation based on adding noise, remove parts...), and train our model to reconstruct the source MRI volumes. We will have access magnetic brain resonance images from control subjects for training the autoencoder. This data is arranged from different sources. \TBD{Concrete sources of data images used in the project will be discussed in further stages but we have some clear options in this moment}:
+\textbf{If the main objective of the project is completed, we could research the application of this model in data augmentation and disease detection fields}. In the case of \textbf{data augmentation}, we will then attempt to reconstruct magnetic resonance images from patients with brain pathologies, with a further view to using the autoencoder to generate 'pathology-free' versions of the said images. In the case of \textbf{disease detection}, we could take an approach like the one in \cite{pinaya2019} (creating a measure for the difference between input and output image and classify it as healthy or non-healthy based on this measure). Patients with pathologies will be outliers in the distribution build by the autoencoder (they will be out of normal range defined by the autoencoder) \cite{marquand2016normative} \cite{mourao2011outlier}. This assumption of patients as outliers (based in \cite{mourao2011outlier}) is used in \cite{pinaya2019} for abnormal brain structure detection.
+
+Of course, we will need \textbf{data}. For this project, we will use \textbf{T1-weighted MRI images of control subjects} (no disease). As the project is of fairly limited length, we won't need to detect disease as a principal objective, but only learn to reconstruct normal MRI images, so we won't need pathology images for this project. In addition, we will investigate whether our method of reconstruction can filter out noise and/or artefacts. So, in essence, we will have $n$ 3D MRI volumes ($n$ can be any number greater than 100) from healthy subjects, we will preprocess it (data augmentation based on adding noise, remove parts...), and train our model to reconstruct the source MRI volumes. We will have access magnetic brain resonance images from control subjects for training the autoencoder. This data is arranged from different sources. We will use a set of T1 weighted control brain MR images for training the autoencoder. Then, we will consider to use another datasets in the experimentation stage:
 
 \begin{itemize}
-    \item The \myurl{https://brain-development.org/ixi-dataset/}{IXI dataset} (\TBD{Most likely to be chosen}).
-    \item Other data sources such as \myurl{https://openneuro.org}{Open Neuro}.
+    \item The \myurl{https://brain-development.org/ixi-dataset/}{IXI dataset} for training.
+    \item Other data sources such as \myurl{https://openneuro.org}{Open Neuro} for experiment with autoencoder applications (reconstruction from disease image, etc).
 \end{itemize}
 
 
@@ -70,93 +74,6 @@ Then I worked half year in Ernst and Young, developing Machine Learning systems 
 
 In addition, I believe that the application of AI to medicine is one of the fields that may be of greater general interest to society. By advancing in the speed and quality of medical diagnoses and treatments, it will be possible to achieve health of higher quality, speed and accessibility for all. Also, computer vision and deep learning have helped to achieve big advances in this field nowadays. 
 
-
-\section{State of art: related works}
-\textit{\TBD{In later stages of the project, the resume of related works and state of art will be replaced in other place of the document.}}
-
-The world relevance and impact of this problem is also shown in the related articles of this subject. The state of art of Deep Learning Autoencoders applied to brain MRI shows the relevance of this field. \TBD{In this stage of the project (\today), we have deeply read 3 papers for building the first bricks and identify the goals and methodology of the project}.
-
-\begin{itemize}
-    \item Walter Pinaya, 2018 \cite{pinaya2019}:
-    
-    Classic methods and approaches based on sMRI (structural magnetic resonance imaging) can't get a good performance in abnormal brain structural detection because neuroanatomical alterations in neurological disorders can be subtle and spatially distributed. Another approach based on Machine Learning methods could improve performance. ML algorithms are sensitive to these subtle characteristics. The downside of this road is the need for a large amount of image data (control and disease) and that the models are black-boxes with no information on the critical characteristics used for the decision. With this Deep Autoencoder, they put this matter up for discussion.
-    
-    In this project, they address the problem of creating a normative model using a deep autoencoder trained with control subjects. With this autoencoder defining a distribution for control patients, they define a deviation metric to measure the neuroanatomical deviation in patients. Patients with some disorder should be outliers in this distribution.
-    
-    Architecture and technique used in the experiment:
-    \begin{itemize}
-        \item Semi-supervised autoencoder: reconstruction of the image and prediction of age and sex.
-        \item 3 hidden layers with SELUs activation function.
-        \item Output layer with Linear activation function.
-        \item Loss function: MSE from reconstructed and original image + cross-entropy for age + cross-entropy for years + Unsupervised cross-covariance.
-        \item 2000 epochs.
-        \item ADAM optimizer (adaptive moment estimation) with adaptative learning rate.
-        \item 64 samples mini-batches.
-        \item Transformation of input image:
-        \begin{itemize}
-            \item Add Gaussian noise (0, 0.1).
-            \item Feature scaling (normalization).
-        \end{itemize}
-        \item One-hot encoding for \texttt{sex} and \texttt{age} labels.
-    \end{itemize}
-    
-    \item \TBD{We made a recompilation of papers reviewed in Table 1 of D. Tamada, 2020 \cite{tamada2020review} and by our own, with some removals and additions based in our goal of the project (see \ref{table:paper_overview}). In further stages we will explain deeply some papers from the table \ref{table:paper_overview}}. From the table of D. Tamada we only obtain 1 autoencoder study \cite{bermudez2018t1autoencoder}, 3 sCNN and DnCNN approaches \cite{kidoh2019scnnt1} \cite{ganHR3d} \cite{dncnnnoise2noise} and 1 GAN study. The other 5 papers have been compiled by our own (Autoencoder based: \cite{pinaya2019} \cite{gondara2016medicalautoencoder} \cite{superresolution} \cite{fuzzyautoencoder}, GAN-Autoencoder-based: \cite{wganautoencoder}).
-    \item \TBD{In next stage (state of art research), we will research the state of art with new techniques and frameworks. \myurl{https://www.connectedpapers.com/}{Connected Papers} is a network science framework to improve the search of papers. There are also other platforms like \myurl{https://paperswithcode.com/}{Papers With Code} and \myurl{https://distill.pub/}{Distill} that improve the experience of article discovering and article visualization-interaction.}
-\end{itemize}    
-
-\begin{table}[!ht]
-    \setlength\extrarowheight{2pt} % for a bit of visual "breathing space"
-    \rowcolors {2}{gray!15}{}
-    \begin{tabularx}{\textwidth}{C C C}
-    \hline
-        \textbf{Purpose} & \textbf{Year, Authors} & \textbf{Network} \\
-        \hline
-        
-        \rowcolor{orange!10}
-        \multicolumn{3}{c}{\textbf{Autoencoders}}\\
-        
-        \hline
-        
-        Identify brain abnormal structural patterns & 2018, W. Pinaya, et al \cite{pinaya2019} & \textbf{Semi-supervised autoencoder for HCP Dataset} \\
-        
-        Denoising for T1 weighted brain MRI & 2018, C. Bermudez, et al \cite{bermudez2018t1autoencoder} & \textbf{Autoencoder with skip connections} \\
-        
-        Medical image denoise & 2016, L. Gondara, et al \cite{gondara2016medicalautoencoder} &\textbf{Convolutional denoising autoencoder} \\
-        
-        General image denoising and super resolution & 2016, XJ. Mao et all \cite{superresolution} [Code available] & \textbf{Convolutional auto-encoders with symmetric skip connections} \\
-        
-        Brain MRI denoise & 2019, N. Chauhan et al \cite{fuzzyautoencoder} & \textbf{Convolutional denoising autoencoder with Fuzzy Logic filters} \\
-
-        \hline
-        \rowcolor{orange!10}
-        \multicolumn{3}{c}{\textbf{sCNN and DnCNN}}\\
-        \hline
-
-        Denoising for T1, T2 and FLAIR brain images & 2018, M. Kidoh, et al \cite{kidoh2019scnnt1} & Single-scale CNN with DCT \\
-        
-        Motion artifact reduction for brain MRI & 2018, P. Johnson, et al \cite{scnnmotion} & Single-scale CNN\\
-        
-        Denoising for multishot DWI & 2020, M Kawamura et al \cite{dncnnnoise2noise} & DnCNN with Noise2Noise \\
-        
-        \hline
-        \rowcolor{orange!10}
-        \multicolumn{3}{c}{\textbf{GAN}}\\
-        \hline
-        
-        Motion artifact reduction for brain MRI & 2018 BA. Duffy, et al \cite{ganHR3d} & GAN with HighRes3dnet as generator \\
-        
-        Denoise 3D MRI & 2019, M. Ran et al \cite{wganautoencoder} & \textbf{Wasserstein GAN with Convolutional Autoencoder generator} \\
- 
-    \hline
-    \end{tabularx}
-    \caption{Overview of studies for noise reduction based in Table 1 from D. Tamada \cite{tamada2020review} (In bold the autoencoder related architecture)}
-    \label{table:paper_overview}
-\end{table}
-
-    
-
-
-%%% SECTION NOT SHOWN, examples from tables and algorithms
 
 \iffalse
 \section{Latex Examples}

@@ -15,7 +15,7 @@ Our diagram is a weekly Gannt Diagram. It has 17 weeks ([mm/dd/yyyy]):
 
 It is built by all the main tasks that a master's degree final project must have and some personalized ones for this project. So we will have 6 big phases derived from project submits.
 
-\TBD{This diagram is up to the date of September 27, 2020. We show it in the next page.}
+\TBD{This diagram is up to the date of October 18, 2020. We show it in the next page.}
 
 \clearpage
 
@@ -38,7 +38,7 @@ It is built by all the main tasks that a master's degree final project must have
     canvas/.append style={fill=none, draw=black!5, line width=.75pt},
     hgrid style/.style={draw=black!5, line width=.75pt},
     vgrid={*1{draw=black!5, line width=.75pt}},
-    today=2,
+    today=5,
     today rule/.style={
       draw=black!64,
       dash pattern=on 3.5pt off 4.5pt,
@@ -72,21 +72,21 @@ It is built by all the main tasks that a master's degree final project must have
   \ganttgroup[progress=100]{Project Selection}{1}{1} \\
   \ganttgroup[progress=99]{Scope and planning}{2}{2} \\
   \ganttbar[
-    progress=99,
+    progress=95,
     name=WBS1A
   ]{Title, Keywords and Abstract}{2}{2} \\
   \ganttbar[
-    progress=95,
+    progress=99,
     name=tit
   ]{Overview, relevance and aims}{2}{2} \\
   \ganttbar[
-    progress=95,
+    progress=100,
     name=over
   ]{Methodology and planning}{2}{2} \\[grid]
-  \ganttgroup[progress=5]{State of art research}{3}{5} \\
-  \ganttbar[progress=10]{Search bibliography}{3}{5} \\
-  \ganttbar[progress=0]{Search similar code projects}{4}{5} \\
-  \ganttbar[progress=0]{Resume state of art, redefine aims}{4}{5}\\[grid]
+  \ganttgroup[progress=95]{State of art research}{3}{5} \\
+  \ganttbar[progress=99]{Search bibliography}{3}{5} \\
+  \ganttbar[progress=99]{Search similar code projects}{4}{5} \\
+  \ganttbar[progress=85]{Resume state of art, redefine aims}{4}{5}\\[grid]
   
   \ganttgroup[progress=0]{Project development}{6}{14} \\
   \ganttbar[progress=0]{Data preparation}{6}{6} \\

@@ -2,3 +2,16 @@
 \label{chapter:tools}
 
 \section{\TBD{To Be Done}}
+
+\section{New paper-discovery frameworks}
+\label{section:papers_discovery}
+
+In this state of art research, we have use new techniques and frameworks among the classical ones. \myurl{https://www.connectedpapers.com/}{Connected Papers} is a network science framework to improve the search of papers. There are also other platforms like \myurl{https://paperswithcode.com/}{Papers With Code} and \myurl{https://distill.pub/}{Distill} that improve the experience of article discovering and article visualization-interaction.
+ 
+I will explain some little examples of paper discovery using this tools. \textit{Connected Papers} retrieve us a graph about the relationship of a given paper. A paper is related with another if one is cited by the other. In addition, the graph contains papers citated by the succesors of the main one. So, the graph contains the most important prior works and Derivate works of our main paper, giving us a perfect tool for paper discovery. \myurl{https://www.connectedpapers.com/main/37a18be8c599b781cc28b6a62d8f11e8a6a75169/3D-MRI-brain-tumor-segmentation-using-autoencoder-regularization/graph}{One example} made for A. Myronenko work \cite{myronenko20183d} is shown in figure \ref{fig:figs/connected_papers_myronenko.PNG} 
+ 
+ \imagen{figs/connected_papers_myronenko.PNG}{Graph of connected papers for A. Myronenko 2018 \cite{myronenko20183d}}
+
+\textit{Papers with code} is a web page, in which are stored papers with it official code implementations. It also group works in different subjects of study, like Medical issues, image segmentation, etc. In addition, it recompile the benchmarks for different machine learning tasks, and it make a ranking of the papers (with the code an pdf linked from the page). We show in figure \ref{fig:figs/pwc_myronenko.png} an example of the Myronenko work. We can see the abstract, the link of the paper and multiple links for implementations. Also, we can see the tasks and the benchmark results. There are more thing that we can do and research in this framework. 
+
+\imagen{figs/pwc_myronenko.png}{A. Myronenko work \cite{myronenko20183d} in Papers with code}
