@@ -1,6 +1,8 @@
 \chapter{Project development}
 \label{chapter:development}
 
+\TBD{TBD: The text wrote in this section is not official. This text are notes for further stages. At current stage, state of art, we only write the section of the related works }
+
 \section{\TBD{To Be Done}}
 
 \section{\TBD{Data Life-cycle}}
@@ -19,4 +21,37 @@
     \item Analysis: create autoencoder
     \item Visualization: Optional - Make some visualizations from results, layers or behavior of the autoencoder.
     \item Publication.
+\end{itemize}
+
+\section{\TBD{Data Exploration}}
+
+First notebook: MRI data familiarization and nibabel familiarization. How to mange MRI, etc. Ids, spreadsheet of metadata, voxel sizes, shape sizes.
+
+ \begin{itemize}
+     \item 0.9375 x 0.9375 x 1.2 $mm^3  \rightarrow$ 576 volumes.
+     \item 0.9766 x 0.9766 x 1.2  $mm^3  \rightarrow$  5 volumes.
+ \end{itemize}
+
+
+\section{\TBD{Data Preprocessing}}
+\label{section:data_preprocessing}
+
+\begin{itemize}
+    \item Select profile: voxel size
+    \item affine-registered to MNIs-space and intensity-normalized
+    \item Select slices: relevant information
+    \item Clean duplicates
+    \item Improve target images: mean local, enhance contrast, etc
+    \item Downsampling
+    \item Pixel normalization: range [0-1]
+    \item Data split: split train and test: stratify by sex, age and etc.
+    \item Data augmentation in train
+    \begin{itemize}
+        \item Add gaussian noise
+        \item Crop images
+    \end{itemize}
+    
+\TBD{For non-isotropic acquisitions, we should ideally slice them so that the slices are high resolution. For example, if the voxel resolution is 1x1x5 mm3, we should slice the volume so that the slices are 1x1mm2 rather than 1x5mm2 (or 5x1mm2)
+2. Overriding the above, we need to be consistent in which orientation we are slicing. In other words, if we are getting axial slices from one volume, we should make sure we get axial slices for all patients. Otherwise, the network will likely not train well.}    
+    
 \end{itemize}

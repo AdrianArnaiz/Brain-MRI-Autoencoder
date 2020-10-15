@@ -80,7 +80,8 @@ We continue with a special case: \textbf{lesion inpainting} \cite{2020inpainting
 \imagen{figs/architecture_manjon.PNG}{Architecture of network of J. V. Manjon et. al. \cite{2020inpainting}}
 
 
-Besides of all of these principal studies and objectives, there are so many more. Théo Estienne et. al. \cite{otherBraTS2020} in 2020 realize a project based in the study from A. Myronenko \cite{myronenko20183d} which we explained before. They also research Deep Learning architectures for tumor segmentation and use a autoencoder-based network with 2 decoder branches: one for tumor segmentation an another for reconstruction. This last branch is only used for encoder-regularization. They use a fully convolutional VNet architecture, with convolutional layers, ReLU activation function and a intra-block residual
+Besides of all of these principal studies and objectives, there are so many more. \myurl{ https://github.com/TheoEst/
+joint_registration_tumor_segmentation}{Théo Estienne et. al.} \cite{otherBraTS2020} in 2020 realize a project based in the study from A. Myronenko \cite{myronenko20183d} which we explained before. They also research Deep Learning architectures for tumor segmentation (BraTS 2018) and use a autoencoder-based network with 2 decoder branches: one for tumor segmentation an another for reconstruction. This last branch is only used for encoder-regularization. They use a fully convolutional VNet architecture, with convolutional layers, ReLU activation function and a intra-block residual
 connection with the output of the first activated convolution of the corresponding block. They use also direct connections from encoder to decoder part. 
 
 We discover another study from \myurl{https://paperswithcode.com/paper/a-convolutional-autoencoder-approach-to-learn}{Evan M. Yu et. al. \cite{learnvolrepreCODE}} in which they try to learn volumetric representations from different parts of brain structure. They also use an autoencoder framework.They architecture is composed by 2 components: a spatial transformer network (STN) and a convolutional autoencoder (CAE). The autoencoder is a kind of ResNet-based one, because it uses residual blocks with skip connections, instance normalization and Leaky ReLU activation function.
@@ -90,6 +91,23 @@ In order to finalize with the review of the studies of reconstruction applicatio
 
 The studies and tasks just explained are the prominent and recent ones but there are other areas and analysis in which MRI restoration could help. Some of them are survival prediction \cite{AnexoReviewAditional}, disease progression \cite{AnexoProgression} or brain connectivity analysis   \cite{AnexoConnectivity}.
 
+\section{Volumes or slices?}
+
+Brain MR images are stored in volumes. It means it are stored as 3D volumes representing somebody's head. Some projects directly use 3D volumes to achieve the purpose (i.e. 3D tumor segmentation or 3D reconstruction). It is more complicated get good results in 3D than in 2D, because results are more relevant in the field. 
+
+When working in 2D we have to consider another decisions. The first one is \textbf{what profile of the volume should we use}. Brain MRI Volume has 3 different views: \textbf{axial} (from above the head), \textbf{sagittal} (from the side of the face, profile) and \textbf{coronal} (from behind the head). We can see the different views in figure \ref{fig:figs/mriviews.jpg}
+
+\imagen{figs/mriviews.jpg}{Left: axial. Middle: sagittal. Right: coronal}
+
+For non-isotropic acquisitions, we should ideally slice them so that the slices are high resolution. For example, if the \textbf{voxel} resolution is 1x1x5 $mm^3$, we should slice the volume so that the slices are 1x1$mm^2$rather than 1x5$mm^2$ (or 5x1$mm^2$). The other issue to address is \textbf{what 2D slices from the volume has relevant information}. Some of the slices are slices of the extremes of the volume, and it didn't represent relevant information about the brain structure-
+
+In this project, we are going to work with 2D slices due to time constraints. Therefore, in this section, we will discuss whether the projects mentioned above have used volumes or images, from which volume profile they have taken the images and how the ones containing important information have been chosen. \TBD{Our approach will be explained in SECTION \ref{section:data_preprocessing}.}
+
+A. Myronenko \cite{myronenko20183d} uses 3D volumes for the brain tumor segmentation task (BraTS 2018) with 1x1x1 mm isotropic resolution and size 240x240x155. Consequently, he does not have to get any profile or select slices. Pinaya et. al \cite{pinaya2019} use T1 weighted images, thus 2D slices. They don't say neither the profile used in the images, nor the method to select 2D slices with relevant information. To continue, Manjón et. al \cite{2020inpainting} propose "the first 3D blind inpainting method in medical imaging" as they say. They use the same dataset that us (IXI), they work directly with 3D volumes, so neither profile nor slice election is done. They only preprocessed the volumes in order to normalize the voxels in to 1 mm3 voxel resolution. More recently, Théo Estienne et.al \cite{otherBraTS2020} also address the problem of 3D tumor segmentation of BraTS 2018. Evan M. Yu et. al. \cite{learnvolrepreCODE} uses 3D volumes of OASIS dataset to learn volumetric shape representations for brains structures.
+
+As we can conclude, most projects address 3D volumes because his relevant implications, both in medical field and in deep learning field. However, we have found another articles in which they work with 2D slices. \textbf{C. Bermudez, et al} \cite{bermudez2018t1autoencoder} uses 2D \textbf{axial} slices from BLSA dataset. All subjects were affine-registered to MNIs-space and intensity-normalized before 2D slices are selected. In addition, the only select a \textbf{single midline axial slice} from each volume. Finally they had 528 images with size 220 x 170 voxels. They use this 2D images to build 3 denoiser autoencoders with skip connections (one autoencoder for each level of noise added to train data). The architecture of this 2D denoiser brain mri autoencoder is shown in figure \ref{fig:figs/cbermudezarchitecture.jpg}
+
+\imagen{figs/cbermudezarchitecture.jpg}{C. Bermudez et. al. Denoising Autoencoder architectue \cite{bermudez2018t1autoencoder}}
 
 
 \section{Network architectures for images}
@@ -114,16 +132,22 @@ Furthermore, there are additional architecture caracteristic in which studies di
 %% Inpainted y super resolution usan MSE, alguno mas tb
 The \textbf{loss function} used is also a critical issue. Most of the studies researched use pixel-wise $MSE$, which implicit improves the evaluation metrics $PSNR$ and $SSIM$. In addition, other metrics are also used. $KL divergence$ is added to loss function when VAE is used or $cross-entropy$ and $cross-covariance$ are added when semi-supervised autoencoder is used \cite{pinaya2019}. However, we will discuss in this project the benefits of using $PSNR$ or $SSIM$ directly in loss function. 
 
+%Slices
+We are going to work with \textbf{2D slices of 3D brain MRI volumes}. It means that  in our project we are going to reconstruct 2D brain MR images. In order to get 2D images from volumes, we have to get slices, as we can see in image \ref{fig:figs/xyz_slice.PNG}. We can get many 2D images from one brain volume. So, in the  preprocessing step, we firstly must choose \textbf{what brain MRI view we are going to work with}. For non-isotropic acquisitions, we should ideally slice them so that the slices are high resolution: select slices where voxel dimension remains equal for the 2 slice dimensions (i.e. 1x1x5 mm3 should transform into slices of 1x1 mm2 and not 1x5 mm2).
+
+But main step in choosing 2D slices is not that, main step is choose slices which retrieves relevant information. A volume can be seen as a 3D head and some slices (i.e. from the sides) can not retrieve relevant information, because it will retrieve noise or bone parts, but it don't show information about brain structure. We can see this fact in the image \ref{fig:figs/xyz_slice_bad.PNG}, in which is shown the same volume of the image \ref{fig:figs/xyz_slice.PNG} but different slice. In order to get images with relevant information, we have recompiled some main methods in the state of art: \textbf{get fixed number of slices from all volumes, get the middle slice from the volume or develop ourselves a computer vision tool to evaluate the thickness (with opencv)  }. Although the first approach seems the simplest, it is the most used for its good results.
+
+\imagen{figs/xyz_slice.PNG}{2D slices from brain volume IXI ID 002. Different profiles can be seen. Source: myself}
+
+\imagen{figs/xyz_slice_bad.PNG}{2D slices from IXI ID 002. Slices from volume sides with no relevant information. Source: myself}
+
+
 %% Contar diferentes preprocesados
 \textbf{Brain MRI preprocessing} differs depending on the objective. First of all, some of the studies use the images of the dataset straight like the \textbf{target output} of the network. Other works enhance the image quality and contrast before sending it like target output. 
 To continue, other preprocessing can be made when sending brain MRI to the input layers. We can realize \textbf{data augmentation} in real time adding Gaussian Noise or cropping some parts (fixed rectangles or with lesion masks like lessionBrain \cite{lesionBrain}).
 \textbf{Downsampling} the input images could be also useful to reduce the number of parameters of the network. So the resolution of the input image should be balanced between usability (if it is very small is not useful at all) and trainability.  The \textbf{normalization of pixels} (values from 0 to 1) is very important for a neural network.  Inputs in the range [0, 1] make easier the network train.
 
-We are going to work with \textbf{2D slices of 3D brain MRI volumes}. It means that  in our project we are going to reconstruct 2D brain MR images. In order to get 2D images from volumes, we have to get slices, as we can see in image \ref{fig:figs/xyz_slice.PNG}. We can get many 2D images from one brain volume. So, in the  preprocessing step, we firstly must choose what profile we are going to work with. Main step in choosing 2D slices is not that, main step is choose slices which retrieves relevant information. A volume can be seen as a 3D head and some slices (i.e. from the sides) can not retrieve relevant information, because it will retrieve noise or bone parts, but it don't show information about brain structure. We can see this fact in the image \ref{fig:figs/xyz_slice_bad.PNG}, in which is shown the same volume of the image \ref{fig:figs/xyz_slice.PNG} but different slice. In order to get images with relevant information, we have recompiled 3 main methods in the state of art: \textbf{get fixed slices from all volumes, use a software tool like FreeSurfer (used in \cite{pinaya2019}) to measure the thickness of the brain in the slice or develop ourselves a computer vision tool to evaluate the thickness (with opencv)  }. Although the first approach seems the simplest, it is the most used for its good results.
 
-\imagen{figs/xyz_slice.PNG}{2D slices from brain volume IXI ID 002. Different profiles can be seen. Source: myself}
-
-\imagen{figs/xyz_slice_bad.PNG}{2D slices from IXI ID 002. Slices from volume sides. Source: myself}
 
 With this research of the art, we are ready to develop the next stages our approach to brain MRI reconstruction. We emphasize that the paper-discovery techniques used in this research are improved by new frameworks described in section \ref{section:papers_discovery}.
 
@@ -152,8 +176,9 @@ Finally, we made a recompilation of papers reviewed in Table 1 of D. Tamada, 202
          
          General image denoising and super resolution & 2016, XJ. Mao et al \cite{superresolution} [Code available] & \textbf{Residual CAE with symmetric skip connections} \\
         
-        Learn Brain volumetric representation &  2018, Evan  M.  Yu  et.   al. \cite{learnvolrepreCODE} [Code available] & \textbf{STN+Residual CAE with skip connections, IN and LReLU} \\
-        \hline
+        Learn Brain volumetric representation &  2018, Evan  M.  Yu  et.   al. \cite{learnvolrepreCODE} [Code available] & \textbf{STN+Residual CAE with skip connections, IN and LReLU}\\
+        
+        3D Tumor segmentation & 2020, T. Estienne \cite{otherBraTS2020} [Code available] & \textbf{VNET Autoencoder for regularization to encoder.} \\
         
         Denoising for T1 weighted brain MRI & 2018, C. Bermudez, et al \cite{bermudez2018t1autoencoder} & \textbf{Autoencoder with skip connections} \\
         
