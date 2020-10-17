@@ -19,7 +19,7 @@
         \item Data augmentation: Noise addition, crop parts, ¿Rotations?
     \end{itemize}
     \item Analysis: create autoencoder
-    \item Visualization: Optional - Make some visualizations from results, layers or behavior of the autoencoder.
+    \item \textbf{Visualization: Optional - Make some visualizations from results, layers or behavior of the autoencoder. Ver las capas de los kernels como se activan con las entradas, ver resultados de capas intermedias, ver gráficas de callbacks.}
     \item Publication.
 \end{itemize}
 
@@ -35,10 +35,22 @@ First notebook: MRI data familiarization and nibabel familiarization. How to man
 
 \section{\TBD{Data Preprocessing}}
 \label{section:data_preprocessing}
-
+ 
+ \TBD{Tell about voxel inspection to select profile}
+ 
+ \TBD{Tell about orientation checking (nifti header or subset checking)}
+ 
+ \TBD{Tell about bout how to get relevant slices}
+ 
+ \TBD{Tell about image preprocessing (translate, contrast, downsampling, normalize)}
+ 
+ \TBD{Tell about split train-test}
+ 
+ \TBD{Tell about data augmentation (Gaussian bluring, noise, crop, crop+inpaint)}
+ 
 \begin{itemize}
     \item Select profile: voxel size
-    \item affine-registered to MNIs-space and intensity-normalized
+    \item intensity-normalized
     \item Select slices: relevant information
     \item Clean duplicates
     \item Improve target images: mean local, enhance contrast, etc
@@ -55,3 +67,8 @@ First notebook: MRI data familiarization and nibabel familiarization. How to man
 2. Overriding the above, we need to be consistent in which orientation we are slicing. In other words, if we are getting axial slices from one volume, we should make sure we get axial slices for all patients. Otherwise, the network will likely not train well.}    
     
 \end{itemize}
+
+\TBD{\section{Results}}
+
+Make some filter exploration when noise, when cropped, when clear, etc. 
+\myurl{http://deeplearning.net/tutorial/dA.html#running-the-code}{http://deeplearning.net/tutorial/dA.html#running-the-code}

@@ -54,7 +54,7 @@ To continue with the different studies using reconstruction methods for distinct
 %% Classification and pinaya - Simple convolutional autoencoder -semisuepr
 Another problem is to \textbf{classify whether an image belongs to a control or a patient}. A recent approach is based on the construction of normative models \cite{marquand2016normative}, and , therefore, the image \underline{reconstruction} based in this normative model. \textbf{Pinaya et al}. \cite{pinaya2019} use this technique to identify abnormal patterns in neuropshychiatric disorders towards achieving \textbf{unsupervised anomaly detection}, so we don't need labeled images from disease data.
 Classic methods and approaches based on \textbf{sMRI} (structural magnetic resonance imaging) can't get a good performance in abnormal brain structural detection because neuroanatomical alterations in neurological disorders can be subtle and spatially distributed. Another approach based on Machine Learning methods could improve performance because algorithms are sensitive to these subtle characteristics. The downside of this road is the need for a large amount of image data (control and disease) and that the models are black-boxes with no information on the critical characteristics used for the decision. They developed a \textbf{Deep semi-supervised Autoencoder}, which put unsupervised anomaly detection up for discussion.
-The goal of that study is build an autoencoder which encode the structure of control brains. It means the autoencoder learn the normal distribution for healthy brains and the abnormal MR images would be outliers in that distribution. With this autoencoder defining a distribution for control patients, they define a \textbf{deviation metric} to measure the neuroanatomical deviation in patients. Patients with some disorder should be outliers in this distribution. The architecture and technique used in the experiment is the following:
+The goal of that study is to build an autoencoder which encode the structure of control brains. It means the autoencoder learn the normal distribution for healthy brains and the abnormal MR images would be outliers in that distribution. With this autoencoder defining a distribution for control patients, they define a \textbf{deviation metric} to measure the neuroanatomical deviation in patients. Patients with some disorder should be outliers in this distribution. The architecture and technique used in the experiment is the following:
 \begin{itemize}
 \item Architecture
     \begin{itemize}
@@ -77,7 +77,7 @@ The goal of that study is build an autoencoder which encode the structure of con
 %% Contar inpaint lessons autoencoder
 We continue with a special case: \textbf{lesion inpainting} \cite{2020inpainting}. It can be seen as a \textbf{data augmentation} task (\underline{reconstructing} ‘pathology-free’ versions from patients with any brain disease). In the work of \textbf{José V. Majón et. al.} \cite{2020inpainting} the medial purpose is \textbf{the improvement of the behavior of current brain image analysis pipelines}.  These pipelines are not robust to brain MR images with lesions. For example, a task such as brain part segmentation decreases its accuracy when dealing with lesions. They proposed a \textbf{3D UNet} like network to map the image with lesion to the inpainted image (target). The encoder is made by 3 blocks of a 3D Convolutional Layer with ReLU activation, Batch Normalization and max-pooling. For the decoder they used same architecture but upsampling instead of max-pooling and, in the last step, a  tri-linear interpolation layer followed by a 3D convolution layer (with 8 filters) plus a ReLU and Batch normalization layers for upsampling the image. We can see the diagram pf the architecture in figure \ref{fig:figs/architecture_manjon.PNG}. Everything was trained with MSE loss function. They use lesion masks to generate artificial training data. The use control cases masked out with lesion masks using the software lesionBrain \cite{lesionBrain}.
 
-\imagen{figs/architecture_manjon.PNG}{Architecture of network of J. V. Manjon et. al. \cite{2020inpainting}}
+\imagen{figs/architecture_manjon.PNG}{U-Net based architecture of network of J. V. Manjon et. al. \cite{2020inpainting}}
 
 
 Besides of all of these principal studies and objectives, there are so many more. \myurl{ https://github.com/TheoEst/
@@ -101,32 +101,114 @@ When working in 2D we have to consider another decisions. The first one is \text
 
 For non-isotropic acquisitions, we should ideally slice them so that the slices are high resolution. For example, if the \textbf{voxel} resolution is 1x1x5 $mm^3$, we should slice the volume so that the slices are 1x1$mm^2$rather than 1x5$mm^2$ (or 5x1$mm^2$). The other issue to address is \textbf{what 2D slices from the volume has relevant information}. Some of the slices are slices of the extremes of the volume, and it didn't represent relevant information about the brain structure-
 
-In this project, we are going to work with 2D slices due to time constraints. Therefore, in this section, we will discuss whether the projects mentioned above have used volumes or images, from which volume profile they have taken the images and how the ones containing important information have been chosen. \TBD{Our approach will be explained in SECTION \ref{section:data_preprocessing}.}
+In this project, we are going to work with 2D slices due to time constraints. Therefore, in this section, we will discuss whether the projects mentioned above have used volumes or images, from which volume profile they have taken the images and how the ones containing important information have been chosen. \TBD{Our approach will be explained in SECTION \ref{section:data_preprocessing} in next stage (development).}
 
 A. Myronenko \cite{myronenko20183d} uses 3D volumes for the brain tumor segmentation task (BraTS 2018) with 1x1x1 mm isotropic resolution and size 240x240x155. Consequently, he does not have to get any profile or select slices. Pinaya et. al \cite{pinaya2019} use T1 weighted images, thus 2D slices. They don't say neither the profile used in the images, nor the method to select 2D slices with relevant information. To continue, Manjón et. al \cite{2020inpainting} propose "the first 3D blind inpainting method in medical imaging" as they say. They use the same dataset that us (IXI), they work directly with 3D volumes, so neither profile nor slice election is done. They only preprocessed the volumes in order to normalize the voxels in to 1 mm3 voxel resolution. More recently, Théo Estienne et.al \cite{otherBraTS2020} also address the problem of 3D tumor segmentation of BraTS 2018. Evan M. Yu et. al. \cite{learnvolrepreCODE} uses 3D volumes of OASIS dataset to learn volumetric shape representations for brains structures.
 
-As we can conclude, most projects address 3D volumes because his relevant implications, both in medical field and in deep learning field. However, we have found another articles in which they work with 2D slices. \textbf{C. Bermudez, et al} \cite{bermudez2018t1autoencoder} uses 2D \textbf{axial} slices from BLSA dataset. All subjects were affine-registered to MNIs-space and intensity-normalized before 2D slices are selected. In addition, the only select a \textbf{single midline axial slice} from each volume. Finally they had 528 images with size 220 x 170 voxels. They use this 2D images to build 3 denoiser autoencoders with skip connections (one autoencoder for each level of noise added to train data). The architecture of this 2D denoiser brain mri autoencoder is shown in figure \ref{fig:figs/cbermudezarchitecture.jpg}
+As we can conclude, most projects address 3D volumes because his relevant implications, both in medical field and in deep learning field. However, we have found another articles in which they work with 2D slices. \textbf{C. Bermudez, et al} \cite{bermudez2018t1autoencoder} uses 2D \textbf{axial} slices from BLSA dataset. All subjects were affine-registered to MNIs-space and intensity-normalized before 2D slices are selected. In addition, the only select a \textbf{single midline axial slice} from each volume. Finally they had 528 images with size 220 x 170 voxels. They use this 2D images to build 3 denoiser autoencoders with skip connections (one autoencoder for each level of noise added to train data). The architecture of this 2D denoiser brain mri autoencoder is shown in figure \ref{fig:figs/cbermudezarchitecture.jpg}.
 
-\imagen{figs/cbermudezarchitecture.jpg}{C. Bermudez et. al. Denoising Autoencoder architectue \cite{bermudez2018t1autoencoder}}
+\imagen{figs/cbermudezarchitecture.jpg}{C. Bermudez et. al. Denoising CAE+skip-connections architecture \cite{bermudez2018t1autoencoder}}
+
+\FloatBarrier
+\clearpage
+
 
 
 \section{Network architectures for images}
 %% Contar u-net, resnet VGG, DenseNet, variational
 
-The encoder part of the autoencoder should work like a feature extractor, so we can research the most known Deep Learning Architectures for images in order to use the same architecture or realize transfer learning (with frozen weights or not).
+The encoder part of the autoencoder should work as a feature extractor, so we can research the most known Deep Learning Architectures for images in order to use the same architecture or realize transfer learning (with frozen weights or not). We will start explaining the first approach to image processing with Deep Learning, then we will continue with residual network architectures (commonly used in related works) and we will conclude by explaining U-Net and V-Net, the other 2 commonly used networks for medical image segmentation.
 
-\TBD{Should i explain architectures like Alexnet, Resnet, Unet, VGG, Variational autoencoders and normal convolutional autoencoders?} 
+\subsection{Alexnet}
 
-\TBD{Are the VAE usefull for us or is it only usefull for generative models?} 
+First of all, we are going to introduce \textbf{Alexnet} \cite{alexnet}, a deep convolutional neural network for image classification created by Alex Krizhevsky et. al in 2012 which, in that moment, was the best approach for ImageNet classification, improving by 10\% of difference with the second best. It is very important because they apply Deep Learning and convolutional networks to the classification of images and they establish a standard from which new networks are created by adding improvements. The architecture, shown in table \ref{table:alexnet}, is made by 5 convolutional layers and max pooling layer after convolutional 1, 2 and 5 layers, and 3 dense (fully connected) layers as classifier part. Rectified linear unit is used a a activation function (ReLU). Softmax function is used in the last layer in order to represent a probability distribution over the image classes. So AlexNet is characterized by \textbf{convolutional layers, max pooling layers, dense layers as classifier and ReLU activation function}.
+
+Since the moment Alexnet appeared, the improvements made were almost everyone about go deeper in the layers and architecture. However, going deeper didn't solve another problems like vanishing gradient.
+
+\begin{table}[!ht]
+  \begin{center}
+   \setlength\extrarowheight{2pt} % for a bit of visual "breathing space"
+    \rowcolors {2}{gray!15}{}
+   \begin{tabular}{c c c c c c c}
+    \toprule
+    \textbf{Layer} & \textbf{Map} & \textbf{Tensor size} & \textbf{Kernel size} & \textbf{Stride} & \textbf{Activation} & \textbf{Params}\\
+    \hline   
+    Input Image     & 1     & 227x227x3 & -     & - & -     & - \\
+    Convolution 1   & 96    &  55x55x96 & 11x11 & 4 & relu & 34,944 \\
+    Max pooling     & 96    &  27x27x96 & 3x3   & 2 & relu & 0 \\
+    Convolution 2   & 256   & 27x27x256 & 5x5   & 1 & relu & 614,656 \\
+    Max pooling     & 256   & 13x13x256 & 3x3   & 2 & relu & 0 \\
+    Convolution 3   & 384   & 13x13x384 & 3x3   & 1 & relu & 885,120 \\
+    Convolution 4   & 384   & 13x13x384 & 3x3   & 1 & relu & 1,327,488 \\
+    Convolution 5   & 256   & 13x13x256 & 3x3   & 1 & relu & 884,992 \\
+    Max pooling     & 256   &  6x6x256  & 3x3   & 2 & relu & 0 \\
+    Dense 1         & -     &  4096x1   & -     & - & relu & 37,752,832 \\
+    Dense 2         & -     & 4096x1    & -     & - & relu & 16,781,312 \\
+    Dense 3         & -     & 4096x1    & -     & - & relu & 4,097,000 \\
+    Output Dense    & -     & 1000      & -     & - & Softmax & - \\
+    \bottomrule
+    \end{tabular}
+    \end{center}
+    \caption{AlexNet Architecture \cite{alexnet}}
+    \label{table:alexnet}
+\end{table}
+
+\subsection{Residual networks}
+
+We realize that most of the works of the state of the art  uses residual networks \cite{myronenko20183d} \cite{learnvolrepreCODE} or networks with skip-connections \cite{2020inpainting} \cite{superresolution} \cite{bermudez2018t1autoencoder}, so we will introduce deeper than other architectures.
+
+The emergence of this network rises from deep plain neural networks (as Alexnet) problems on training.  Despite the general belief that the more layers these networks have the more it learns, an experiment made by He et. al. \cite{reslearning} shows that, in some cases, more layers are related to less accuracy even using regularization techniques like L2 or Dropout. Deep plain networks suffer from performance degradation due to the loss of detail in deeper layers and vanishing gradient problem
+
+This residual learning approach is introduced by Kaiming He et. al. in 2016 \cite{reslearning} with the goal of reducing the complexity of deep neural networks. The main innovation of residual networks is that the layers "learn residual functions with reference to the layer inputs, instead of learning unreferenced functions" \cite{reslearning} as they said. This network obtains better performance than before with less complexity in training.
+
+In plain networks, the layers are built to approximate a mapping function from the image to a target: $H(x)$. This is equivalent to approximate the residual of this function: $F(x) = H(x)-x$ and then get the original function as $F(x)+x$. This kind of layer is called \textbf{Residual Block} in which we estimate the residuals and then we add the original input to get our original target function. We can see the architecture of this block in figure \ref{fig:figs/ResidualBlock.png} , which is the picture of the original work. Thus, a \textbf{skip-connection} is include in the network. \textbf{This only consist in adding the input of a stack of layers to the output of this stack of layers}. We have to notice $F(x)$ and $x$ could not have same dimension, so we have to multiply by a linear projection the original input $x$ for matching dimensions. 
+
+\imagen[0.5]{figs/ResidualBlock.png}{Residual Block Architecture \cite{reslearning}}
 
 
+This paradigm of residual learning gives rise to other ResNet-based architectures, which differs in number of layers and building block compositions. This kind of networks uses residual blocks (there are also several residual block architecture) with skip-connections embedded in some architecture. Two main examples are the ResNet34 and Resnet50 networks, which use different kinds of residual blocks. In addition, He et. al. presents some differentes ResNet architectures which we show in figure \ref{fig:figs/resnet_archs.PNG}. 
+
+In addition, an Autoencoder made with residual blocks made by A. Myronenko \cite{myronenko20183d} is shown in figure \ref{fig:figs/architecture_myronenko.PNG}, in which green blocks represent residual blocks with group normalization. Residual blocks are also used in Yu et. al. \cite{learnvolrepreCODE} work. 
+
+
+\imagen[1]{figs/resnet_archs.PNG}{Resnet architectures presented in \cite{reslearning}}
+
+
+
+\subsection{Other skip-connection-based architectures}
+
+As we explained before, deep plain networks suffer from performance degradation due to the loss of detail in deeper layers and vanishing gradient problem. Residual networks address this problems through residual blocks. But there is a inner idea in ResNets which other architectures also use: \textbf{skip-connections}. In ResNet skip-connections are added in order to estimate the residual function, but these kind of skip-connections can be added to networks with another purpose. Other networks like some Fully Convolutional Networks also use this skip-connections. Other networks like some Fully Convolutional Networks also use this skip-connections. For example, FCN-8 architecture has skip connections, in which some feature maps of the earlier layers are added to later layers.
+
+\textbf{Skip connections from one layer of the encoder to it symmetric layer of the autoencoder} are added to the architecture with 2 purposes. First, to allow the signal to backpropagate straight to the lower layers and thus address the problem of gradient disappearance, facilitating deep network training and, thus, achieving improvements in restoration performance. Second, when we build a deeper network, low-detail of the image could be lost, making deconvolution difficult in recovering task. However, the skip connections pass through the feature maps which carry much image detail and helps deconvolution to recover the original image. 
+
+Some related works use this kind of architecture. C. Bermudez et. al \cite{bermudez2018t1autoencoder} uses skip symmetric connections as can be shown in figure \ref{fig:figs/cbermudezarchitecture.jpg}. This is a convolutional autoencoder with Leaky ReLU, in which the skip-connections add a layer in the encoder to their symmetric layer in the autoencoder (Like FCN but being symmetric).
+
+However, some concrete architectures of CAE + skip-connections have been established due to their good results in some tasks. U-Net \cite{ronneberger2015unet} is one of them, and a U-Net-Autoencoder-based architecture is used by Manjon et. al. \cite{2020inpainting} which we can see in figure \ref{fig:figs/architecture_manjon.PNG}. 
+
+
+
+
+\subsubsection{U-Net and V-Net}
+
+\textbf{U-Net} \cite{ronneberger2015unet} is one of the networks that has skip-connections between symmetric layers. U-Net is a Fully-Convolutional-based Network (FCN) that is mainly used for image segmentation, that's why Manjón \cite{2020inpainting} use a V-Net based architecture for inpainting. The principal 2 differences between a FCN and U-net are the \textbf{symmetry} of U-NET and the skip connections between the downsampling (encoder) path and the upsampling (decoder) path which use \textbf{concatenation} operator instead of sum (sum operator is used in skip-connections in Fully Convolutional Networks).
+
+Each of the 4 blocks used in the downsampling path is made up of 2 convolutional layers (3x3) with batch normalization and ReLU and another 2x2 MaxPooling layer. This block extract advanced features while reducing feature maps sizes. In the upsampling route, the 4 blocks used are made by a 2x2 upconvolutional layer and 2 other convolutional layers like those of the downsampling route to recover size of segmentation maps, the concatenation of the feature map of the symmetric layer of the encoder to give the location information from the encoding path to decoding path and a final 1x1 convolution. The original architecture of U-NET paper is illustrated in figure \ref{fig:figs/unet_architecture.png}. As we can see, this original U-Net architecture is very similar to Manjon et. al. U-Net based autoencoder; see figure \ref{fig:figs/architecture_manjon.PNG}.
+
+\imagen[0.7]{figs/unet_architecture.png}{U-Net architecture of original paper: O Ronneberger et. al. \cite{ronneberger2015unet}}
+
+U-Net has suffered some modifications, one of the most important is \textbf{V-Net}. This network was introduces by F. Miilletari et. al \cite{vnet}. V-Net is used for volumetric biomedical image segmentation and it gets a very good performance in this task. This network is used in the work or T. Estienne \cite{otherBraTS2020} to create a V-Net-based autoencoder to solve Brats 2018 challenge. V-Net combines the skip-symmetric-connections with residual blocks. It means that the encoder and decoder parts are built with residual blocks instead of convolutional blocks as U-Net. V-Net also changes the size of kernels and convolutions in respect to original U-Net, but the main change are the residual blocks. So, V-Net combine the 2 types of skip-connections we have spoken in this research of state of art: residual blocks and larger skip-connections between symetrich layers.
+
+
+%%SECTION: SUMMARY
 \section{Summary of related works}
 
 We have compiled some recent and prominent works in which they use reconstruction methods for different purposes. We have generally explained their architectures and approaches.
 
 %% Arquitecturas
-Although all the collected architectures are based on autoencoders, it has its differences in how the autoencoder is built. First of all, it differs in the main architecture of the blocks of the autoencoder. Different kind of networks like \textbf{ResNet, UNet, VGG, Simple CAE} or \textbf{AlexNet}. Also, in some of them use the Variational Autoencoder approach, even in \cite{myronenko20183d} combine ResNet and VAE. 
-Furthermore, there are additional architecture caracteristic in which studies differ. Some of them use \textbf{skip connections} which offers 2 advantages: They allow the signal to backpropagate directly to the lower layers and thus address the problem of gradient disappearance, facilitating deep network training and consequently achieving improvements in restoration performance. Second, these skip connections pass the image details from the convolutional layers to the deconvolutional layers, which is beneficial for getting the clean image reconstructed \cite{superresolution}. In conclussion with the architecture research, most of them uses Residual Networks or UNet networks, and recently the performance is improved by adding skip connections.
+Although all the collected architectures are based on autoencoders, it has its differences in how the autoencoder is built. First of all, it differs in the main architecture of the blocks of the autoencoder. Different kind of networks like \textbf{ResNet, UNet, VNet, Simple CAE} or \textbf{AlexNet}. Also, in some of them use the Variational Autoencoder approach, even in \cite{myronenko20183d} combine ResNet and VAE. 
+Furthermore, there are additional architecture characteristic in which studies differ. 
+
+Regardless of the main architecture, one feature is shared by all related works (works that use Deep Learning for MRI reconstruction): \textbf{skip-connections}. In the works that use ResNet-based \cite{myronenko20183d} \cite{learnvolrepreCODE} architectures, skip-connections are implicit in residual blocks. In this architecture the skip-connection is used for represents the residual estimation function. In U-Net \cite{2020inpainting} and CAE with skip-connections architectures \cite{bermudez2018t1autoencoder} \cite{superresolution}, the skip-connection is used with 2 purposes: allow the signal to backpropagate straight to the lower layers and pass the image details from the convolutional layers to the deconvolutional layers, fighting the low-detail loss \cite{superresolution}. In conclusion with the architecture research, \textbf{the related work use skip connections architectures: ResNet-base and CAE+Skip-Connection-based (U-Net-based and more)}.
 
 %% Contar diferentes loss y medidas: mse, psnr, correlacion, kl
 %% Inpainted y super resolution usan MSE, alguno mas tb
@@ -143,15 +225,14 @@ But main step in choosing 2D slices is not that, main step is choose slices whic
 
 
 %% Contar diferentes preprocesados
-\textbf{Brain MRI preprocessing} differs depending on the objective. First of all, some of the studies use the images of the dataset straight like the \textbf{target output} of the network. Other works enhance the image quality and contrast before sending it like target output. 
-To continue, other preprocessing can be made when sending brain MRI to the input layers. We can realize \textbf{data augmentation} in real time adding Gaussian Noise or cropping some parts (fixed rectangles or with lesion masks like lessionBrain \cite{lesionBrain}).
-\textbf{Downsampling} the input images could be also useful to reduce the number of parameters of the network. So the resolution of the input image should be balanced between usability (if it is very small is not useful at all) and trainability.  The \textbf{normalization of pixels} (values from 0 to 1) is very important for a neural network.  Inputs in the range [0, 1] make easier the network train.
-
+\textbf{Brain MRI preprocessing} differs depending on the objective. First of all, some of the studies use the images of the dataset directly as the \textbf{target output} of the network. Other works \textbf{enhance the image quality and contrast} before sending it like target output. 
+To continue, other preprocessing can be made when sending brain MRI to the input layers. \textbf{Downsampling} the input images could be also useful to reduce the number of parameters of the network. So the resolution of the input image should be balanced between usability (if it is very small is not useful at all) and trainability. We can \textbf{normalize the intensity} of pixels (values from 0 to 1 or mean 0 and standard deviation 1) is very important for a neural network.  Normalization of the inputs helps the training of the network due to several reasons. One of the most important is that a target variable with a large spread of values may result in large error gradient values causing weight values to change dramatically, making the learning process unstable \cite{bishop1995neural}. Besides, \textbf{affine transformations} like translation or rotation could be applied. In addition, we can realize \textbf{data augmentation} in real-time by adding Gaussian noise, other noise or cropping some parts (fixed rectangles or with lesion masks like lessionBrain \cite{lesionBrain}).
+  
 
 
 With this research of the art, we are ready to develop the next stages our approach to brain MRI reconstruction. We emphasize that the paper-discovery techniques used in this research are improved by new frameworks described in section \ref{section:papers_discovery}.
 
-Finally, we made a recompilation of papers reviewed in Table 1 of D. Tamada, 2020 \cite{tamada2020review} and by our own, with some removals and additions based in our goal of the project (see \ref{table:paper_overview}). We have just deeply explained some of them. From the table of D. Tamada we only obtain 1 autoencoder study \cite{bermudez2018t1autoencoder}, 3 sCNN and DnCNN approaches \cite{kidoh2019scnnt1} \cite{ganHR3d} \cite{dncnnnoise2noise} and 1 GAN study.  The other papers have been compiled by our own (Autoencoder based: \cite{pinaya2019} \cite{myronenko20183d} \cite{gondara2016medicalautoencoder} \cite{superresolution} \cite{fuzzyautoencoder} \cite{learnvolrepreCODE}, GAN-Autoencoder-based: \cite{wganautoencoder}).
+Finally, we made a recompilation of papers reviewed in Table 1 of D. Tamada, 2020 \cite{tamada2020review} and by our own, with some removals and additions based in our goal of the project (see \ref{table:paper_overview}). We have just deeply explained some of them. From the table of D. Tamada we only obtain 1 autoencoder study \cite{bermudez2018t1autoencoder}, 3 sCNN and DnCNN approaches \cite{kidoh2019scnnt1} \cite{ganHR3d} \cite{dncnnnoise2noise} and 1 GAN study.  The other papers have been compiled by our own (Autoencoder based: \cite{pinaya2019} \cite{myronenko20183d} \cite{gondara2016medicalautoencoder} \cite{superresolution} \cite{fuzzyautoencoder} \cite{learnvolrepreCODE} \cite{otherBraTS2020}, GAN-Autoencoder-based: \cite{wganautoencoder}).
 
 
 
@@ -159,7 +240,7 @@ Finally, we made a recompilation of papers reviewed in Table 1 of D. Tamada, 202
     \setlength\extrarowheight{2pt} % for a bit of visual "breathing space"
     \rowcolors {2}{gray!15}{}
     \begin{tabularx}{\textwidth}{C C C}
-    \hline
+    \toprule
         \textbf{Purpose} & \textbf{Year, Authors} & \textbf{Network} \\
         \hline
         
@@ -206,7 +287,7 @@ Finally, we made a recompilation of papers reviewed in Table 1 of D. Tamada, 202
         
         Denoise 3D MRI & 2019, M. Ran et al \cite{wganautoencoder} & \textbf{Wasserstein GAN with Convolutional Autoencoder generator} \\
  
-    \hline
+    \bottomrule
     \end{tabularx}
     \caption{Overview of studies for reconstruction based in Table 1 from D. Tamada \cite{tamada2020review} (In bold the autoencoder related architecture)}
     \label{table:paper_overview}
