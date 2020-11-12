@@ -130,3 +130,9 @@ dmypy.json
 
 # IXI dataset
 *.gz
+
+#Numpy slices
+src/IXI-T1/img/test/*.npy
+src/IXI-T1/img/train_and_val/*.npy
+
+.vscode/
