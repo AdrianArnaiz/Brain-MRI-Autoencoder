@@ -4,7 +4,7 @@ from tensorflow.keras.utils import Sequence
 class DataGenerator(Sequence):
     'Generates data for Keras'
     def __init__(self, list_IDs, batch_size=8, dim=(256, 256), n_channels=1, 
-                 shuffle=True, std_normalization=False, to_fit=True, f_aug=None):
+                 shuffle=True, std_normalization=False, augment=False, to_fit=True, f_aug=None):
         'Initialization'
         self.dim = dim
         self.batch_size = batch_size
@@ -15,6 +15,7 @@ class DataGenerator(Sequence):
         self.std_normalization = std_normalization
         self.to_fit = to_fit
         self.f_aug = f_aug
+        self.augment = augment
         self.on_epoch_end()
 
     def __len__(self):
@@ -34,14 +35,20 @@ class DataGenerator(Sequence):
         
         if self.to_fit:
             batch_x, batch_y = batch_x
-        
-            return np.stack([
-                self._augment(image=x) for x in batch_x
-            ], axis=0), np.array(batch_y)
+            
+            if self.augment:
+                return np.stack([
+                    self._augment(image=x) for x in batch_x
+                ], axis=0), np.array(batch_y)
+            else:
+                 return batch_x, batch_y
         else:
-            return np.stack([
-                self._augment(image=x) for x in batch_x
-            ], axis=0)
+            if self.augment:
+                return np.stack([
+                    self._augment(image=x) for x in batch_x
+                ], axis=0)
+            else:
+                return batch_x
 
 
     def on_epoch_end(self):

@@ -16,6 +16,7 @@ import nibabel as nib
 from deepbrain import Extractor
 import os
 import warnings
+import matplotlib.pyplot as plt
 warnings.filterwarnings("default")
 
 
@@ -29,7 +30,8 @@ class DeepBrainSliceExtractor:
                 pretrained:bool = False, 
                 img_data = None, 
                 trainval_ids = None, 
-                test_ids = None):
+                test_ids = None,
+                out_format = 'npy'):
         """[summary]
 
         Args:
@@ -48,7 +50,9 @@ class DeepBrainSliceExtractor:
         self.pretrained = pretrained
         self.img_data = img_data
         self.trainval_ids = trainval_ids
-        self. test_ids = test_ids
+        self.test_ids = test_ids
+
+        self.out_format = out_format
 
         if self.pretrained:
             if isinstance(img_data, str):
@@ -89,9 +93,15 @@ class DeepBrainSliceExtractor:
                 brain_q = int(self.img_data[self.img_data['ID']==name_slice]['BRAIN_QUANTITY'])
                 if brain_q>3000:
                     innercount += 1
-                    img_slice = vol_np[:,:,id_sag_slice]
+                    img_slice = np.rot90(vol_np[:,:,id_sag_slice])
                     assert(img_slice.shape==(256,256))
-                    np.save(self.save_img_path+split+name_slice, img_slice)
+
+                    if self.out_format == 'npy':
+                        np.save(self.save_img_path+split+name_slice, img_slice)
+                    else:
+                        plt.imsave(self.save_img_path+split+name_slice+'.'+self.out_format,
+                                   img_slice, format = self.out_format,
+                                   cmap='gray')
 
             if split == 'train_and_val/':
                 counttrain += innercount
