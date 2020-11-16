@@ -1,12 +1,14 @@
 import tensorflow as tf
 
 class tf_data_png_loader():
-    def __init__(self, files_path, batch_size=8, cache=False, shuffle_buffer_size=1000):
+    def __init__(self, files_path, batch_size=8, cache=False, shuffle_buffer_size=1000, resize=None, train=True):
         self.files_path = files_path
         self.samples = len(self.files_path)
         self.batch_size = batch_size
         self.cache = cache
         self.shuffle_buffer_size = shuffle_buffer_size
+        self.resize = resize
+        self.train = train
         
     def get_tf_ds_generator(self):
         """
@@ -23,13 +25,18 @@ class tf_data_png_loader():
             # convert the compressed string to a 3D float tensor
             img = tf.io.decode_png(img, channels=1)
             img = tf.image.convert_image_dtype(img, tf.float32)
+            
+            if self.resize:
+                img = tf.image.resize(img, self.resize)
+                
             #std_norm
             img = tf.math.divide(tf.math.subtract(img, tf.math.reduce_mean(img)),
                                      tf.math.reduce_std(img))
+            
             return img, tf.identity(img)
 
 
-        def prepare_for_training(ds, cache=False, shuffle_buffer_size=1000):
+        def prepare_for_training(ds, cache=False, shuffle_buffer_size=10000):
             # If a small dataset, only load it once, and keep it in memory.
             # use `.cache(filename)` to cache preprocessing work for datasets that don't fit in memory.
             if cache:
@@ -43,12 +50,13 @@ class tf_data_png_loader():
 
             # representing the number of times the dataset should be repeated. 
             # The default behavior (if count is None or -1) is for the dataset be repeated indefinitely.
-            ds = ds.repeat()
+            if self.train:
+                ds = ds.repeat()
             
             #HERE Augmentation that works with one image at a time on CPU
             
             ds = ds.batch(self.batch_size)
-
+            
             #HERE AUGMENTATION works on batches
             #aug_ds = train_ds.map(lambda x, y: (resize_and_rescale(x, training=True), y))
 
