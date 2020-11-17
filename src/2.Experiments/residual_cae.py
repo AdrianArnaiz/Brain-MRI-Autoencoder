@@ -44,16 +44,13 @@ def full_pre_residual_block(x: Tensor, filters, ks = (3,3), stride = 2, name='FP
     https://towardsdatascience.com/an-overview-of-resnet-and-its-variants-5281e2f56035
     [7]. K. He, X. Zhang, S. Ren, and J. Sun. Identity Mappings in Deep Residual Networks. arXiv preprint arXiv:1603.05027v3,2016.
     '''
-
-    y = BatchNormalization(name=name+'_BN1')(x)
-    y = relu_bn(y, name=name+'_ReLu1')
+    y = relu_bn(x, name=name+'_ReLu1')
     y = Conv2D(filters= filters,
                kernel_size= ks,
                strides= stride,              
                padding="same",
                name=name+'_C1')(y)
      
-    y = BatchNormalization(name=name+'_BN2')(y)
     y = relu_bn(y, name=name+'_ReLu2')
     y = Conv2D(filters= filters,
                kernel_size= ks,
@@ -90,9 +87,11 @@ def build_res_encoder(input_shape, batch_size=None, pooling=False, block_type='o
     if block_type == 'original':
         residual_block = original_residual_block
         bname = 'RB'
-    else:
+    elif block_type == 'full_pre':
         residual_block = full_pre_residual_block
         bname = 'FP_RB'
+    else:
+        raise Exception('Not implemented block')
 
     #ENCODER
     x = Conv2D(32, (3,3), strides= 2, padding="same", name='Conv1')(input_img) #64x64x32

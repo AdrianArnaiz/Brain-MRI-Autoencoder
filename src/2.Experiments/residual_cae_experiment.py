@@ -14,17 +14,21 @@ import random
 import time
 #My modules and classes
 from residual_cae import build_res_encoder
+from residual_cae_myronenko import build_myronenko_cae
 from my_tf_data_loader_optimized import tf_data_png_loader
 #Custom tf execution
 physical_devices = list_physical_devices('GPU')
 set_memory_growth(physical_devices[0], True)
 
+
+NETWORK_ARCHITECTURE = 'myronenko_cae' # 'small_res_cae', 'myronenko_cae'
+MODEL_NAME = 'Myronenko_ls128_MinMax'
 EPOCHS = 100
 BATCH_SIZE = 32
 train_percentage = 0.85
 INPUT_SHAPE = (128,128)
-MODEL_NAME = 'small_res_cae_original_MinMax'
 
+##########################
 RES_PATH = 'results'+os.path.sep+MODEL_NAME+'_e'+str(EPOCHS)+'_b'+str(BATCH_SIZE)+'_is'+str(INPUT_SHAPE[0])+'_T'+time.strftime('%d_%m_%y__%H_%M') 
 if not os.path.exists(RES_PATH):
     os.mkdir(RES_PATH) 
@@ -58,17 +62,24 @@ validation_ds = validation_loader.get_tf_ds_generator()
 STEP_SIZE_TRAIN = len(train_img_files) // train_loader.batch_size
 STEP_SIZE_VALID = len(validation_img_files) // validation_loader.batch_size
 
+###############################
 #Callbacks
 my_callbacks = [CSVLogger(RES_PATH+os.path.sep+MODEL_NAME+'_csvlogger.csv', separator=";", append=False),
                 ModelCheckpoint(filepath=RES_PATH+os.path.sep+MODEL_NAME+'_model.h5', #.{epoch:02d}-{val_loss:.2f}
                                 monitor='val_loss',
                                 mode='min',
                                 save_best_only=True),
-                EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=10, min_delta=1e-6)
+                EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=15, min_delta=1e-7)
                 ]                
 
 #MODEL FIT
-autoencoder =  build_res_encoder(INPUT_SHAPE+(1,)) #,  params.get('batch_size'))   
+if NETWORK_ARCHITECTURE == 'small_res_cae':
+    autoencoder =  build_res_encoder(INPUT_SHAPE+(1,), block_type=None) #,  params.get('batch_size'))
+elif NETWORK_ARCHITECTURE == 'myronenko_cae':
+    autoencoder =  build_myronenko_cae(INPUT_SHAPE+(1,))
+else:
+    raise('Architecture not implemented')
+
 autoencoder.compile(loss=MSE, optimizer=RMSprop())
 plot_model(autoencoder, to_file=RES_PATH+os.path.sep+MODEL_NAME+".png", show_shapes=True, show_layer_names=True, rankdir="TD")
 history = autoencoder_train = autoencoder.fit(train_ds,
