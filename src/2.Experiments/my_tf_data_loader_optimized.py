@@ -26,13 +26,14 @@ class tf_data_png_loader():
             img = tf.io.decode_png(img, channels=1)
             img = tf.image.convert_image_dtype(img, tf.float32)
             
-            if self.resize:
+            if self.resize and self.resize !=(256,256):
                 img = tf.image.resize(img, self.resize)
-                
-            #std_norm
-            img = tf.math.divide(tf.math.subtract(img, tf.math.reduce_mean(img)),
-                                     tf.math.reduce_std(img))
             
+            #min_max_sacler_norm
+            img = tf.math.divide(tf.math.subtract(img, tf.math.reduce_min(img)),
+                                 tf.math.subtract(tf.math.reduce_max(img), tf.math.reduce_min(img)))
+            #std_norm
+            #img = tf.math.divide(tf.math.subtract(img, tf.math.reduce_mean(img)),tf.math.reduce_std(img))
             return img, tf.identity(img)
 
 
