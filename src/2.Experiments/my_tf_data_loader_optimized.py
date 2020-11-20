@@ -46,8 +46,9 @@ class tf_data_png_loader():
                 else:
                     ds = ds.cache()
 
-            #https://stackoverflow.com/questions/46444018/meaning-of-buffer-size-in-dataset-map-dataset-prefetch-and-dataset-shuffle
-            ds = ds.shuffle(buffer_size=shuffle_buffer_size)
+            if self.train:
+                #https://stackoverflow.com/questions/46444018/meaning-of-buffer-size-in-dataset-map-dataset-prefetch-and-dataset-shuffle
+                ds = ds.shuffle(buffer_size=shuffle_buffer_size)
 
             # representing the number of times the dataset should be repeated. 
             # The default behavior (if count is None or -1) is for the dataset be repeated indefinitely.
@@ -61,8 +62,9 @@ class tf_data_png_loader():
             #HERE AUGMENTATION works on batches
             #aug_ds = train_ds.map(lambda x, y: (resize_and_rescale(x, training=True), y))
 
-            # `prefetch` lets the dataset fetch batches in the background while the model is training.
-            ds = ds.prefetch(buffer_size=AUTOTUNE)
+            if self.train:
+                # `prefetch` lets the dataset fetch batches in the background while the model is training.
+                ds = ds.prefetch(buffer_size=AUTOTUNE)
             return ds
 
         #Get all path files

@@ -8,6 +8,8 @@ from tensorflow.keras.callbacks import CSVLogger, ModelCheckpoint, EarlyStopping
 from tensorflow.keras.optimizers import RMSprop
 from tensorflow.keras.losses import MSE
 from tensorflow.keras.utils import plot_model
+from tensorflow import math as tfmath
+from tensorflow import image as tfimage
 import glob
 import os
 import random
@@ -21,19 +23,20 @@ from my_tf_data_loader_optimized import tf_data_png_loader
 physical_devices = list_physical_devices('GPU')
 set_memory_growth(physical_devices[0], True)
 
-
 NETWORK_ARCHITECTURE = 'small_res_cae'
-KERNEL_REGULARIZATION = True
+KERNEL_REGULARIZATION = False
 REDUCE_LR_PLATEAU = True
 BUILDING_BLOCK = 'full_pre' #only relevant in small_res_cae
 METRIC = 'MSE'
 MODEL_NAME = NETWORK_ARCHITECTURE+'_'+METRIC
 
-
 EPOCHS = 100
 BATCH_SIZE = 32
 train_percentage = 0.85
 INPUT_SHAPE = (128,128)
+
+#############################
+# Check experiment options
 
 block_options = ['original',
                  'full_pre'
@@ -43,10 +46,27 @@ architecure_options = ['small_res_cae',
                        'skip_con_cae'
 ]
 
+def DSSIM(y_true, y_pred):
+    return tfmath.divide(tfmath.subtract(1.0,tfimage.ssim(y_true, y_pred, max_val=1.0)),2.0)
+
+def PSNR(y_true, y_pred):
+    return tfimage.psnr(y_true, y_pred, max_val=1.0)
+
+loss_options = ['MSE',
+                'DSSIM',
+                'PSNR'
+]
+
+assert METRIC in loss_options
+loss_function = eval(METRIC)
+loss_options.remove(METRIC)
+loss_options = [eval(i) for i in loss_options]
+
 assert NETWORK_ARCHITECTURE in architecure_options,'Network does not belong to the possible ones'
 assert BUILDING_BLOCK in block_options,'Bulinding block not implemented'
 
 ##########################
+#Results PATH
 reduce_lr_str = '_LRPlat' if REDUCE_LR_PLATEAU else '_NoPlat'
 kreg_str = '_L2KReg' if KERNEL_REGULARIZATION else '_NoKReg'
 block_str = '_'+BUILDING_BLOCK if NETWORK_ARCHITECTURE=='small_res_cae' else ''
@@ -56,6 +76,9 @@ RES_PATH = 'results'+os.path.sep+MODEL_NAME+'_T'+time.strftime('%d_%m_%y__%H_%M'
 if not os.path.exists(RES_PATH):
     os.mkdir(RES_PATH) 
 
+
+########################
+#Data Splitting
 TRAIN_img_PATH = '..'+os.path.sep+'IXI-T1'+os.path.sep+'PNG'+os.path.sep+'train_val_folder'+os.path.sep+'train_and_val'
 TEST_img_PATH = '..'+os.path.sep+'IXI-T1'+os.path.sep+'PNG'+os.path.sep+'test_folder'+os.path.sep+'test'
 
@@ -110,7 +133,9 @@ elif NETWORK_ARCHITECTURE == 'skip_con_cae':
 else:
     raise('Architecture not implemented')
 
-autoencoder.compile(loss=MSE, optimizer=RMSprop())
+autoencoder.compile(loss=loss_function, 
+                    optimizer=RMSprop(),
+                    metrics=loss_options)
 plot_model(autoencoder, to_file=RES_PATH+os.path.sep+MODEL_NAME+".png", show_shapes=True, show_layer_names=True, rankdir="TD")
 history = autoencoder_train = autoencoder.fit(train_ds,
                                               epochs=100,
