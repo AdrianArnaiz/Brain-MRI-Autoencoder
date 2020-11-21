@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 class tf_data_png_loader():
-    def __init__(self, files_path, batch_size=8, cache=False, shuffle_buffer_size=1000, resize=None, train=True):
+    def __init__(self, files_path, batch_size=8, cache=False, shuffle_buffer_size=1000, resize=(128,128), train=True):
         self.files_path = files_path
         self.samples = len(self.files_path)
         self.batch_size = batch_size

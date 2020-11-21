@@ -120,7 +120,7 @@ my_callbacks = [CSVLogger(RES_PATH+os.path.sep+MODEL_NAME+'.csv', separator=";",
 if REDUCE_LR_PLATEAU:
     my_callbacks.append(ReduceLROnPlateau(monitor='val_loss', factor=0.2,
                                           patience=4, min_lr=1e-7, 
-                                          min_delta=1e-8,
+                                          min_delta=1e-7,
                                           verbose=1))
 
 #MODEL FIT
