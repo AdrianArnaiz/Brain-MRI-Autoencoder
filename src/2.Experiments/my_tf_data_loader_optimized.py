@@ -1,7 +1,9 @@
 import tensorflow as tf
+import tensorflow_addons as tfa
+
 
 class tf_data_png_loader():
-    def __init__(self, files_path, batch_size=8, cache=False, shuffle_buffer_size=1000, resize=(128,128), train=True):
+    def __init__(self, files_path, batch_size=8, cache=False, shuffle_buffer_size=1000, resize=(128,128), train=True, augment=False):
         self.files_path = files_path
         self.samples = len(self.files_path)
         self.batch_size = batch_size
@@ -9,6 +11,7 @@ class tf_data_png_loader():
         self.shuffle_buffer_size = shuffle_buffer_size
         self.resize = resize
         self.train = train
+        self.augment = augment
         
     def get_tf_ds_generator(self):
         """
@@ -55,7 +58,8 @@ class tf_data_png_loader():
             if self.train:
                 ds = ds.repeat()
             
-            #HERE Augmentation that works with one image at a time on CPU
+            if self.augment:
+                ds = ds.map(self.img_augment, num_parallel_calls=AUTOTUNE)
             
             ds = ds.batch(self.batch_size)
             
@@ -77,3 +81,33 @@ class tf_data_png_loader():
         # cache = True, False, './file_name'
         # If the dataset doesn't fit in memory use a cache file,eg. cache='./data.tfcache'
         return prepare_for_training(ds, cache=self.cache, shuffle_buffer_size = self.shuffle_buffer_size) #'cocodata.tfcache'
+
+
+    def img_augment(self, image, label):    
+    
+        #Noise and Dropout
+        rnds_noise = tf.random.uniform((1,2),minval=0, maxval=0.04)
+        image = tf.nn.dropout(image,rnds_noise[0][0])
+        image = tf.keras.layers.GaussianNoise(rnds_noise[0][1])(image, training=True)
+        
+        #Blankout and blur
+        rnds_absolutes = tf.random.uniform((1,2),minval=0, maxval=1)
+        if rnds_absolutes[0][0] < 0.2:
+            size = tf.random.uniform((), minval=10, maxval=30, dtype=tf.dtypes.int32)
+            offset = tf.random.uniform((), minval=10, maxval=100, dtype=tf.dtypes.int32)
+            image = tfa.image.cutout(tf.expand_dims(image,0),  
+                                    mask_size = (size,size ),
+                                    offset = (offset, offset),
+                                    constant_values = 0
+                                    )[0,...]
+        if rnds_absolutes[0][1] < 0.1:
+            image = tfa.image.gaussian_filter2d(image,
+                                                filter_shape = [3, 3],
+                                                sigma = 0.6,
+                                                constant_values = 0,
+                                            )
+        # Normalization
+        image = tf.math.divide(tf.math.subtract(image, tf.math.reduce_min(image)),
+                                    tf.math.subtract(tf.math.reduce_max(image), tf.math.reduce_min(image)))
+        return image, label
+    
