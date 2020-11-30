@@ -16,6 +16,13 @@ pd.set_option("display.precision", 10)
 physical_devices = tf.config.experimental.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
+
+def DSSIM(y_true, y_pred):
+    return tf.math.divide(tf.math.subtract(1.0,tf.image.ssim(y_true, y_pred, max_val=1.0)),2.0)
+
+def PSNR(y_true, y_pred):
+    return tf.image.psnr(y_true, y_pred, max_val=1.0)
+
 class TestMetricWrapper():
 
     def __init__(self, models_folders_paths, test_files_path):
@@ -66,7 +73,10 @@ class TestMetricWrapper():
         keras_evaluation = {}
         for model_folder in self.models_folders_paths:
             model_path = glob.glob(model_folder+'\\*.h5')[0]
-            model_trained = tf.keras.models.load_model(model_path)
+            model_trained = tf.keras.models.load_model(model_path, custom_objects = {'DSSIM':DSSIM,
+                                                                           'PSNR':PSNR
+                                                                           }
+                                            )
             model_name = model_path.split('\\')[-1][:-3]
             print(model_name, end=' - ')
             result = model_trained.evaluate(self.test_ds, verbose=verbose)
@@ -93,7 +103,10 @@ class TestMetricWrapper():
         custom_evaluation = dict()
         for model_folder in self.models_folders_paths:
             model_path = glob.glob(model_folder+'\\*.h5')[0]
-            model = tf.keras.models.load_model(model_path)
+            model = tf.keras.models.load_model(model_path, custom_objects = {'DSSIM':DSSIM,
+                                                                           'PSNR':PSNR
+                                                                           }
+                                            )
             model_name = model_path.split('\\')[-1][:-3]
             if verbose: print(model_name, end=' - ')
 
@@ -140,6 +153,7 @@ class TestMetricWrapper():
         for i,m in enumerate(['mse','dssim','psnr']):
             df[m+'_mean'].plot(ax = axs[i], kind='bar',
                                             yerr = df[m+'_std'],
+                                            title=m,
                                             color = colors)
         return fig
     
@@ -190,7 +204,10 @@ class TestMetricWrapper():
         #Show predicted images
         for i, model_folder in enumerate(self.models_folders_paths):
             model_path = glob.glob(model_folder+'\\*.h5')[0]
-            model = tf.keras.models.load_model(model_path)
+            model = tf.keras.models.load_model(model_path, custom_objects = {'DSSIM':DSSIM,
+                                                                           'PSNR':PSNR
+                                                                           }
+                                            )
             model_name = model_path.split('\\')[-1][:-3]
             #get predicted images
             predicted = model.predict(selected_files_ds)
@@ -203,6 +220,74 @@ class TestMetricWrapper():
                 plt.imsave(save_dir+os.path.sep+str(j)+'_'+model_name+'.jpg', img_out[:,:,0], format = 'jpg', cmap='gray')
         return fig.tight_layout(pad=1)
 
+    def plot_corrupted_images(self, id_images = [183,75,6], n_random=2, figsize=(20,15)):
+        """Plot images and the recostruction of every model. Images are as quality as original: neither modified nor augmented.
+        We plot: the origial image (input and target in this case) and every model reconstruction for 3 fixed images and 2 random selected.
+        We also save the images in the models_folder_parent_path/qualitative/clear
+
+        Args:
+            id_images (list, optional): index of fixed images to be shown. Defaults to [183,75,6].
+            n_random (int, optional): number of random images to be . Defaults to 2.
+            figsize (tuple, optional): [description]. Defaults to (15,15).
+
+        Returns:
+            [matplotlib.figure]: figure of the images.
+        """
+        selected_files = [self.test_files_path[i] for i in id_images]
+        selected_files.extend(random.sample(self.test_files_path, n_random))
+
+        #Create paths for save reconstructed pictures
+        result_parent_folder = '\\'.join(os.path.abspath(self.models_folders_paths[0]).split('\\')[:-1])
+        #Make folder for images
+        if not os.path.exists(result_parent_folder+os.path.sep+'qualitative'):
+            os.mkdir(result_parent_folder+os.path.sep+'qualitative')
+        save_dir = result_parent_folder+os.path.sep+'qualitative'+os.path.sep+'corrupted'
+        if not os.path.exists(save_dir):
+            os.mkdir(save_dir)
+
+        #Create figure
+        fig, axs = plt.subplots(len(selected_files),
+                                len(self.models_folders_paths)+1,
+                                figsize=figsize) #rows=n_imgs, cols=n_models+original
+        #Create tfDataset with selected files
+        params = {'batch_size': 1, 'resize':(128,128)}
+        selected_files_ds = tf_data_png_loader(selected_files,
+                              **params,
+                              train=False,
+                              augment=True,
+                              ).get_tf_ds_generator()
+        
+        #Show input/target picture
+        selected_images = list(selected_files_ds) #Lista de tuplas [b1(ims_x, imsy), b2(ims_x, imsy),..., bn(...)]
+        input_images_ds = tf.data.Dataset.from_tensor_slices([batchx[0] for batchx, batchy in selected_images]).batch(1)
+        #return 0, selected_images
+        idx_img=0
+        for batchx in input_images_ds:
+            img_x = batchx[0]
+            axs[idx_img][0].imshow(img_x, cmap='gray')
+            axs[idx_img][0].set_title('Input Corrupted\n'+selected_files[idx_img].split('\\')[-1][:6])
+            axs[idx_img][0].axis('off')
+            plt.imsave(save_dir+os.path.sep+str(idx_img)+'_Input.jpg', img_x[:,:,0], format = 'jpg', cmap='gray')
+            idx_img+=1
+        #Show predicted images
+        for i, model_folder in enumerate(self.models_folders_paths):
+            model_path = glob.glob(model_folder+'\\*.h5')[0]
+            model = tf.keras.models.load_model(model_path, custom_objects = {'DSSIM':DSSIM,
+                                                                           'PSNR':PSNR
+                                                                           }
+                                               )
+            model_name = model_path.split('\\')[-1][:-3]
+            #get predicted images
+            predicted = model.predict(input_images_ds)
+            for j, img_out in enumerate(predicted):
+                axs[j][i+1].imshow(img_out, cmap='gray')
+                n = int(np.ceil(len(model_name)/2)) #number of rows to divide the title
+                tit = '\n'.join([model_name[i:i+n] for i in range(0, len(model_name), n)])
+                axs[j][i+1].set_title(tit)
+                axs[j][i+1].axis('off')
+                plt.imsave(save_dir+os.path.sep+str(j)+'_'+model_name+'.jpg', img_out[:,:,0], format = 'jpg', cmap='gray')
+        return fig.tight_layout(pad=1), selected_images
+
     def _dssim(self, x, y):
         """
         We calculate the Structural Dissimilarity between 2 images.
@@ -214,7 +299,6 @@ class TestMetricWrapper():
 
     def _mserror(self, x, y):
         return tf.math.reduce_mean(tf.keras.losses.MSE(x, y))
-
 
 
 

@@ -23,11 +23,13 @@ from my_tf_data_loader_optimized import tf_data_png_loader
 physical_devices = list_physical_devices('GPU')
 set_memory_growth(physical_devices[0], True)
 
-NETWORK_ARCHITECTURE = 'small_res_cae'
-KERNEL_REGULARIZATION = False
+NETWORK_ARCHITECTURE = 'small_res_cae' #See architecture options
+AUGMENT = True
+METRIC = 'MSE' #See loss options
+KERNEL_REGULARIZATION = True
 REDUCE_LR_PLATEAU = True
-BUILDING_BLOCK = 'full_pre' #only relevant in small_res_cae
-METRIC = 'MSE'
+BUILDING_BLOCK = 'full_pre' #only relevant in small_res_cae - Se block options
+
 MODEL_NAME = NETWORK_ARCHITECTURE+'_'+METRIC
 
 EPOCHS = 100
@@ -57,7 +59,7 @@ loss_options = ['MSE',
                 'PSNR'
 ]
 
-assert METRIC in loss_options
+assert METRIC in loss_options,'Loss does not belong to the possible ones'
 loss_function = eval(METRIC)
 loss_options.remove(METRIC)
 loss_options = [eval(i) for i in loss_options]
@@ -70,7 +72,8 @@ assert BUILDING_BLOCK in block_options,'Bulinding block not implemented'
 reduce_lr_str = '_LRPlat' if REDUCE_LR_PLATEAU else '_NoPlat'
 kreg_str = '_L2KReg' if KERNEL_REGULARIZATION else '_NoKReg'
 block_str = '_'+BUILDING_BLOCK if NETWORK_ARCHITECTURE=='small_res_cae' else ''
-MODEL_NAME+= block_str+kreg_str+reduce_lr_str
+augment_str = '_AUG' if AUGMENT else ''
+MODEL_NAME+= block_str+augment_str+kreg_str+reduce_lr_str
 
 RES_PATH = 'results'+os.path.sep+MODEL_NAME+'_T'+time.strftime('%d_%m_%y__%H_%M') 
 if not os.path.exists(RES_PATH):
@@ -98,10 +101,10 @@ params = {'batch_size': BATCH_SIZE,
           'resize':INPUT_SHAPE
          }
 #train         
-train_loader = tf_data_png_loader(train_img_files, **params)
+train_loader = tf_data_png_loader(train_img_files, **params, augment=AUGMENT)
 train_ds = train_loader.get_tf_ds_generator()
 #validation
-validation_loader = tf_data_png_loader(validation_img_files, **params)
+validation_loader = tf_data_png_loader(validation_img_files, **params, augment=False)
 validation_ds = validation_loader.get_tf_ds_generator()
 
 #Train parameters for model.fit with generators
@@ -115,7 +118,7 @@ my_callbacks = [CSVLogger(RES_PATH+os.path.sep+MODEL_NAME+'.csv', separator=";",
                                 monitor='val_loss',
                                 mode='min',
                                 save_best_only=True),
-                EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=10, min_delta=3e-7)
+                EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=15, min_delta=3e-7)
                 ]
 if REDUCE_LR_PLATEAU:
     my_callbacks.append(ReduceLROnPlateau(monitor='val_loss', factor=0.2,
