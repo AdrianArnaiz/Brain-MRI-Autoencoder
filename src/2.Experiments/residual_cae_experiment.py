@@ -25,7 +25,7 @@ set_memory_growth(physical_devices[0], True)
 
 NETWORK_ARCHITECTURE = 'small_res_cae' #See architecture options
 AUGMENT = True
-METRIC = 'MSE' #See loss options
+METRIC = 'DSSIM' #See loss options
 KERNEL_REGULARIZATION = True
 REDUCE_LR_PLATEAU = True
 BUILDING_BLOCK = 'full_pre' #only relevant in small_res_cae - Se block options
@@ -113,17 +113,24 @@ STEP_SIZE_VALID = len(validation_img_files) // validation_loader.batch_size
 
 ###############################
 #Callbacks
+
+if METRIC == 'MSE':
+    stopping_min_delta = 2e-7
+    reducer_min_delta = 1e-7
+elif METRIC == 'DSSIM':
+    stopping_min_delta = 5e-5
+    reducer_min_delta = 2e-5
 my_callbacks = [CSVLogger(RES_PATH+os.path.sep+MODEL_NAME+'.csv', separator=";", append=False),
                 ModelCheckpoint(filepath=RES_PATH+os.path.sep+MODEL_NAME+'.h5', #.{epoch:02d}-{val_loss:.2f}
                                 monitor='val_loss',
                                 mode='min',
                                 save_best_only=True),
-                EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=15, min_delta=3e-7)
+                EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=20, min_delta=stopping_min_delta)
                 ]
 if REDUCE_LR_PLATEAU:
     my_callbacks.append(ReduceLROnPlateau(monitor='val_loss', factor=0.2,
                                           patience=4, min_lr=1e-7, 
-                                          min_delta=1e-7,
+                                          min_delta=reducer_min_delta,
                                           verbose=1))
 
 #MODEL FIT
