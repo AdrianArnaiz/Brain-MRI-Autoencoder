@@ -23,11 +23,11 @@ from my_tf_data_loader_optimized import tf_data_png_loader
 physical_devices = list_physical_devices('GPU')
 set_memory_growth(physical_devices[0], True)
 
-NETWORK_ARCHITECTURE = 'small_res_cae' #See architecture options
+NETWORK_ARCHITECTURE = 'skip_con_cae' #See architecture options
 AUGMENT = True
-METRIC = 'DSSIM' #See loss options
-KERNEL_REGULARIZATION = True
-REDUCE_LR_PLATEAU = True
+METRIC = 'MSE' #See loss options
+KERNEL_REGULARIZATION = True #L2
+REDUCE_LR_PLATEAU = True #Min_improvement dynamic satted dependeds on METRIC used for loss
 BUILDING_BLOCK = 'full_pre' #only relevant in small_res_cae - Se block options
 
 MODEL_NAME = NETWORK_ARCHITECTURE+'_'+METRIC
