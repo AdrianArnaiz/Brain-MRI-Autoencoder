@@ -12,7 +12,7 @@ Brain-MRI-Autoencoder
 
 ***********
 
-**Master's Final Project. Master's in Data Science at Universitat Oberta de Catalunya.**
+**Master's Thesis. Master's in Data Science at Universitat Oberta de Catalunya.**
 
 #### Author
 * **Adrián Arnaiz Rodríguez** - [aarnaizr@uoc.edu](mailto:aarnaizr@uoc.edu)
@@ -23,3 +23,22 @@ Brain-MRI-Autoencoder
 ***************
 ## Convolutional Autoencoder Architectures used
 ![](ArchitecturesDiagram.svg)
+
+#### Experiments:
+* **With Data Augmentation**:
+    * ***2 experiments (MSE and DSSIM Loss) for each of the following architectures:***
+        * Shallow residual autoencoder (full-pre)
+        * Shallow residual autoencoder (full-pre) + L2 reg.
+        * Skip connection autoencoder
+        * Skip connection autoencoder + L2 reg.
+        * Myronenko Autoencoder
+        * **RESIDUAL-UNET** (proposed new improved architecture)
+
+* Without Data Augmentation:
+    * MSE Loss
+        * Shallow residual autoencoder (original)
+        * Shallow residual autoencoder (full-pre)
+        * Shallow residual autoencoder (full-pre) + L2 reg.
+        * Skip connection autoencoder
+        * Myronenko Autoencoder
+        * Myronenko Autoencoder + L2 reg.
