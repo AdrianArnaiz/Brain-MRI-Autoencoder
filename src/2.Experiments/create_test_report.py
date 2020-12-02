@@ -11,6 +11,9 @@ import pandas as pd
 import numpy as np
 import random
 import os
+import tensorflow_addons as tfa
+from copy import deepcopy
+
 pd.set_option("display.precision", 10)
 
 physical_devices = tf.config.experimental.list_physical_devices('GPU')
@@ -170,6 +173,7 @@ class TestMetricWrapper():
         Returns:
             [matplotlib.figure]: figure of the images.
         """
+        tf.get_logger().setLevel('ERROR')
         selected_files = [self.test_files_path[i] for i in id_images]
         selected_files.extend(random.sample(self.test_files_path, n_random))
 
@@ -233,6 +237,7 @@ class TestMetricWrapper():
         Returns:
             [matplotlib.figure]: figure of the images.
         """
+        tf.get_logger().setLevel('ERROR')
         selected_files = [self.test_files_path[i] for i in id_images]
         selected_files.extend(random.sample(self.test_files_path, n_random))
 
@@ -288,6 +293,83 @@ class TestMetricWrapper():
                 plt.imsave(save_dir+os.path.sep+str(j)+'_'+model_name+'.jpg', img_out[:,:,0], format = 'jpg', cmap='gray')
         return fig.tight_layout(pad=1), selected_images
 
+    def plot_custom_corrupted(self, id_image = 183, noise=None, dropout=None, blur=None, cutout=None, figsize=(20,15)):
+        """
+        Plot a image reconstructed by the class methods. The image can be selected as well as the actions to be done on it.
+        Args:
+            id_image (int, optional): id of the image to be shown. Defaults to 183.
+            noise ([float], optional): Level of Gaussian noise. Recomeded range [0-0.04]. Defaults to None.
+            dropout ([float], optional): Level of dropout. Recomeded range [0-0.05]. Defaults to None.
+            blur ([float], optional): Sigma for Gaussian blurred with 3,3 kernel. Defaults to None.
+            cutout ([dict], optional): 2 params for cut_out an image: size of the square and tuple of position. 
+                Defaults to None.
+        """
+        tf.get_logger().setLevel('ERROR')
+        selected_file = self.test_files_path[id_image]
+
+        #Make folder for images
+        result_parent_folder = '\\'.join(os.path.abspath(self.models_folders_paths[0]).split('\\')[:-1])
+        if not os.path.exists(result_parent_folder+os.path.sep+'qualitative'):
+            os.mkdir(result_parent_folder+os.path.sep+'qualitative')
+        save_dir = result_parent_folder+os.path.sep+'qualitative'+os.path.sep+'corrupted_custom'
+        if not os.path.exists(save_dir):
+            os.mkdir(save_dir)
+
+        # Read image
+        img = tf.io.read_file(selected_file)
+        img = tf.io.decode_png(img, channels=1)
+        img = tf.image.convert_image_dtype(img, tf.float32)
+        img = tf.image.resize(img, (128,128))
+        img = self._scaler(img)
+
+        #Corrupt an image
+        corr_img = deepcopy(img)
+        if dropout is not None:
+            corr_img = self._add_dropout(corr_img, dropout)
+        if noise is not None:
+            corr_img = self._add_gaussian_noise(corr_img, noise)
+        if cutout is not None:
+            corr_img = self._add_cutout(corr_img, **cutout)
+        if blur is not None:
+            corr_img = self._add_blur(corr_img, sigma=blur)
+        corr_img = self._scaler(corr_img)
+
+        fig, axs = plt.subplots(int(np.ceil(len(self.models_folders_paths)//2))+1,
+                                2, #columns
+                                figsize=figsize) #rows=n_imgs, cols=n_models+original
+
+        #Show original images
+        axs[0][0].imshow(img, cmap='gray')
+        axs[0][0].axis('off')
+        axs[0][0].set_title('Original\n'+selected_file.split('\\')[-1][:6])
+        axs[0][1].imshow(corr_img, cmap='gray')
+        axs[0][1].axis('off')
+        axs[0][1].set_title('Input Corrupted\n'+selected_file.split('\\')[-1][:6])
+        plt.imsave(save_dir+os.path.sep+str(id_image)+'_Original.jpg', img[:,:,0], format = 'jpg', cmap='gray')
+        plt.imsave(save_dir+os.path.sep+str(id_image)+'_Input.jpg', corr_img[:,:,0], format = 'jpg', cmap='gray')
+
+        #Show predicted images
+        for i, model_folder in enumerate(self.models_folders_paths):
+            model_path = glob.glob(model_folder+'\\*.h5')[0]
+            model = tf.keras.models.load_model(model_path, custom_objects = {'DSSIM':DSSIM,
+                                                                           'PSNR':PSNR
+                                                                           }
+                                               )
+            model_name = model_path.split('\\')[-1][:-3]
+            #get predicted images
+            predicted = model.predict(tf.expand_dims(corr_img,0))
+            predicted = predicted[0]
+            axs[(i)//2 +1][i%2].imshow(predicted, cmap='gray')
+            n = int(np.ceil(len(model_name)/2)) #number of rows to divide the title
+            tit = '\n'.join([model_name[i:i+n] for i in range(0, len(model_name), n)])
+            axs[(i)//2 +1][i%2].set_title(tit)
+            axs[(i)//2 +1][i%2].axis('off')
+            plt.imsave(save_dir+os.path.sep+str(id_image)+'_'+model_name+'.jpg', predicted[:,:,0], format = 'jpg', cmap='gray')
+
+        return fig.tight_layout(pad=1)
+
+        
+
     def _dssim(self, x, y):
         """
         We calculate the Structural Dissimilarity between 2 images.
@@ -300,5 +382,27 @@ class TestMetricWrapper():
     def _mserror(self, x, y):
         return tf.math.reduce_mean(tf.keras.losses.MSE(x, y))
 
+    def _add_gaussian_noise(self, img, level):
+        return tf.keras.layers.GaussianNoise(level)(img, training=True)
+    
+    def _add_dropout(self, img, level):
+        return tf.nn.dropout(img, level)
 
+    def _add_cutout(self, img, size, offset):
+        return tfa.image.cutout(tf.expand_dims(img,0),  
+                                    mask_size = (size,size),
+                                    offset = offset,
+                                    constant_values = 0
+                                    )[0,...]
 
+    def _add_blur(self, img, sigma):
+        return tfa.image.gaussian_filter2d(img,
+                                           filter_shape = [3,3],
+                                           sigma = sigma,
+                                           constant_values = 0,
+                                        )
+    
+    def _scaler(self, img):    
+        return tf.math.divide(tf.math.subtract(img, tf.math.reduce_min(img)),
+                                    tf.math.subtract(tf.math.reduce_max(img), tf.math.reduce_min(img)))
+        
