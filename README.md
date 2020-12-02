@@ -21,3 +21,5 @@ Brain-MRI-Autoencoder
 * **Dr. Baris Kanber** - [bkanber@uoc.edu](mailto:bkanber@uoc.edu)
 
 ***************
+## Convolutional Autoencoder Architectures used
+![](ArchitecturesDiagram.svg)
