@@ -334,7 +334,7 @@ class TestMetricWrapper():
             corr_img = self._add_blur(corr_img, sigma=blur)
         corr_img = self._scaler(corr_img)
 
-        fig, axs = plt.subplots(int(np.ceil(len(self.models_folders_paths)//2))+1,
+        fig, axs = plt.subplots(int(np.ceil(len(self.models_folders_paths)/2))+1,
                                 2, #columns
                                 figsize=figsize) #rows=n_imgs, cols=n_models+original
 
@@ -365,7 +365,8 @@ class TestMetricWrapper():
             axs[(i)//2 +1][i%2].set_title(tit)
             axs[(i)//2 +1][i%2].axis('off')
             plt.imsave(save_dir+os.path.sep+str(id_image)+'_'+model_name+'.jpg', predicted[:,:,0], format = 'jpg', cmap='gray')
-
+        
+        if i%2==0: fig.delaxes(axs[(i)//2 +1][1])
         return fig.tight_layout(pad=1)
 
         

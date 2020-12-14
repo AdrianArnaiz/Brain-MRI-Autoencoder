@@ -93,7 +93,7 @@ class tf_data_png_loader():
         #Blankout and blur
         rnds_absolutes = tf.random.uniform((1,2),minval=0, maxval=1)
         if rnds_absolutes[0][0] < 0.2:
-            size = tf.random.uniform((), minval=10, maxval=30, dtype=tf.dtypes.int32)
+            size = tf.random.uniform((), minval=10, maxval=40, dtype=tf.dtypes.int32)
             offset = tf.random.uniform((), minval=10, maxval=100, dtype=tf.dtypes.int32)
             image = tfa.image.cutout(tf.expand_dims(image,0),  
                                     mask_size = (size,size ),

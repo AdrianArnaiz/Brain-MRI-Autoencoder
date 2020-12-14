@@ -29,7 +29,7 @@ set_memory_growth(physical_devices[0], True)
 #EXPERIMENT CONFIGURABLE OPTIONS
 NETWORK_ARCHITECTURE = 'res_skip_cae' #See architecture options
 AUGMENT = True
-METRIC = 'DSSIM' #See loss options
+METRIC = 'MSE' #See loss options
 KERNEL_REGULARIZATION = False #L2
 REDUCE_LR_PLATEAU = True #Min_improvement dynamic satted dependeds on METRIC used for loss
 BUILDING_BLOCK = 'full_pre' #only relevant in small_res_cae - Se block options
