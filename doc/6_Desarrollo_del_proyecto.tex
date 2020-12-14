@@ -1,48 +1,447 @@
 \chapter{Project development}
 \label{chapter:development}
 
-\TBD{TBD: The text wrote in this section is not official. This text are notes for further stages. At current stage, state of art, we only write the section of the related works }
+\section{Pipeline and overview}
 
-\section{\TBD{To Be Done}}
+We are going to explain a general pipeline of the experiment to set a clear steps to reach our goal. These steps will be deeper explained in the following sections. First, we explore all the original NIFTI volumes. To continue we select the best profile of the volumes to get the 2D images, we check the orientation of the slices and we extract the 2D images with relevant information. Then, we split the MRI volumes into 2 separated sets: train/validation and test. It is going to be a stratified splitting by age, sex and ethnicity. We also check for duplicates and more information about the volumes such as relevant slices of each volume. At this point, we can start training our models. We define different architectures and a custom data loader in order to carry out these experiments with data augmentation in an optimized way. We run experiments with different architectures, with and without data augmentation, with and without L2 regularization and also using MSE and DSSIM Loss functions. Finally, we get the test metrics, we compare them all, and we also compare the models in a qualitative way. This last evaluation shows an intuition on how the models reconstruct corrupted brain MR images. 
 
-\section{\TBD{Data Life-cycle}}
-\label{section:datalifecycle}
+The development, control version, and planning through issues and Sprints is made with Github and Zotero in the \myurl{https://github.com/AdrianArnaiz/Brain-MRI-Autoencoder}{official repository of this Master's Thesis}. We will reference the appropriate documents of the repository as we explain the steps.
 
+The diagram of this experiment pipeline is shown in figure \ref{fig:figs/Pipeline_experiment.png}.
+
+\imagen[1]{figs/Pipeline_experiment.png}{Pipeline of the project.}
+\FloatBarrier
+
+\section{Dataset}
+
+\subsection{Exploration and preprocessing}
+
+We are going to work with \myurl{https://brain-development.org/ixi-dataset/}{IXI brain T1-weighted MRI dataset}. This public dataset belongs to Imperial College London and it is composed by MRI images in NIFTI format. We made an initial exploration of the characteristics (could be seen in \myurl{https://github.com/AdrianArnaiz/Brain-MRI-Autoencoder/blob/master/src/0.Set_up/MRI\%20treatment\%20-\%20nibabel.ipynb}{\texttt{/src/0.Set\_up/MRI treatment - nibabel.ipynb}}) of this dataset and also some deeper ones are discovered while profile selection, orientation checking, selection of relevant slices and data splitting. 
+
+IXI dataset has a total of \textbf{584 volumes}. The dimension of voxels are $0.9375\times0.9375\times1.2 mm^3$ for 576 volumes and $0.9766\times0.9766\times1.2 mm^3$ for 5 volumes. Although some volumes have different voxels dimensions, every volume is isotropic for 1st and 2nd dimensions. The dimension in voxels of the images are the following: the first 2 dimensions are 256 for every volume, but there are differences in the third dimension between different MRIs. Therefore, there are 503 volumes with $256\times256\times150$, 74 volumes with $256\times256\times146$, 2 volumes with $256\times256\times130$ and last 2 volumes with $256\times256\times130$ voxels, see figure \ref{fig:figs/voxel3dimpie.png}. We also realize that if we freeze the first dimension we get the coronal view, if we freeze the second dimension we get the axial view and if we freeze the third dimension we get the sagittal view. We don't care so much about the volume dimension in voxels, but voxel dimension. We don't care so much about the volume dimension in voxels, but voxel dimension. Volume dimension is significant in relevant slice selection, but we are going to use a dynamic and more complex method to improve this step. However, voxel dimension in $mm^3$ is relevant for profile selection. We discuss this in following sections, providing more information of the data exploration and the application of this exploration to our tasks such as profile selection. 
+
+\imagen[0.5]{figs/voxel3dimpie.png}{Number of volumes for each different value of 3rd volume dimension (in voxels).}
+
+\subsubsection{Profile selection and orientation checking}
+
+As aforementioned, we have to select a profile to slice the 3D volume in 2D images. For non-isotropic acquisitions, we should ideally slice them so that the slices are high resolution. For example, if the voxel resolution is 1x1x5 mm3, we should slice the volume so that the slices are 1x1mm2 rather than 1x5mm2 (or 5x1mm2). Overriding this, we need to be consistent in which orientation we are slicing. In other words, if we are getting axial slices from one volume, we should make sure we get axial slices for all patients. Otherwise, the network will likely not train well. This process is made in \myurl{https://github.com/AdrianArnaiz/Brain-MRI-Autoencoder/blob/master/src/1.DataPreprocessing/0.\%20MRI\%20Profile\%20Selection\%20-\%20voxel\%20and\%20size\%20inspection.ipynb}{\texttt{/src/1.DataPreprocessing/0.MRI Profile Selection - voxel and size inspection.ipynb}}. On one hand, \textbf{we realize that the first and second dimension are isotropic for all volumes, so we will freeze the 3 one to get the slices with higher resolution}. Dimensions of voxels are specified in above section. Therefore, we are using \textbf{the sagittal view of the brain} for this project. On the other hand, we check every volume orientation in their headers, \textbf{and every volume is in the same orientation}: \textbf{P, S, R}. This means that 1st voxel axis goes from anterior to \textbf{P}osterior, second voxel axis goes from inferior to \textbf{S}uperior and third voxel axis goes from left to \textbf{R}ight. Getting images with sagittal orientation, \textbf{we have a total of 86794 2D images} from the 584 volumes.
+
+\subsubsection{Relevant slice selection}
+\label{subsubsection:relevantsliceselection}
+
+As we discuss in section \ref{section:soa_vols_slices}, we are going to use 2D images extracted from 3D volumes. The first step is just explained: profile selection. But we have to make a more important decision: \textbf{what 2D slices from the volume are we going to select}. In section \ref{section:sumary_soa} we show that some parts of the volume do not have any brain portion, and from those parts no relevant information can be retrieved, so we have to select images with relevant information. This is a very important step. This step has a huge impact in many aspects. First of all, the autoencoder will learn the distribution of data that we give it. If we use no relevant images in training, the autoencoder will learn strange distributions. One solution is to be very restrictive in the selection of slices. Some projects \textbf{use the single midline slice} from the volume \cite{bermudez2018t1autoencoder}, but, and this is another aspect in where this step has an impact, the amount of data for training decreases abruptly. Another common approach is to \textbf{select a fixed middle range} of slices but we have the same problems. If we select a narrow range, lot of relevant slices are discarded. If we use a wide range, we take a risk of select no relevant slices. This happens because the difference between volumes: maybe in one volume the relevant slices are 20-100 and in another are 50-110.
+
+In this project we will discuss 3 methods of relevant slice selection, 2 of them based on the distribution analysis of intensity pixel values and another one based on the use of a pre-trained neural network used for brain segmentation. All these methods are developed in the notebook \myurl{https://github.com/AdrianArnaiz/Brain-MRI-Autoencoder/blob/master/src/1.DataPreprocessing/1.Preprocessing-IntensityInspection-SelectRelecant-Slicing.ipynb}{\texttt{/src /1.DataPreprocessing /1. Preprocessing Intensity Inspection Select Relevant Slicing.ipynb}}.
+
+\textbf{Non-zero intensity pixel count method}
+
+Our first candidate approach is based on the intensity of the pixels of each image, specifically the count of non-zero values of an image. With this method we suppose that pixels with intensity different from 0 belong to the body, and if we set a proper threshold on that distribution we could filter the images with some amount of brain quantity. We made an histogram of the distribution, in we have measure the non-pixel values of every slice of every volume. The mean of this distribution is 44386.72 with a standard deviation of 8771.458 and a range of [28-64709]. But the significant fact of this distribution is that it follows a similar Normal distribution: \textbf{Negative left skewed distribution} (Negative skewness or Right modal). The distribution is shown in figure \ref{fig:figs/nonzero_pixel_count_distribution.png}. 
+
+\imagen[0.9]{figs/nonzero_pixel_count_distribution.png}{Distribution of Non-Zero pixel count per image.}
+
+This distribution has a clear definition and it is really nice to see it. We had big hope in defining the outliers of the distribution and solve the relevant slice selection with this approach. But we discovered that discarding only the -3STD outliers or the Q1-1.5*IQR outliers were bad approach because lot of irrelevant data pass through the filter. Because of this we were more restrictive: we discard the 25\% images with less nonzero pixels (Q1, light blue vertical line in figure \ref{fig:figs/nonzero_pixel_count_distribution.png}). We improved the performance, but the filter discarded few images in some volumes and too much images in other ones. This method is very inconsistent: the brain can not be identify by non-zero pixel values. This happens because the apparition of noise and strange bone structures at the sides of the volume (sides of the head of a patiente). This noise or bone structure is counted as non-zero value, so this images pass through the filter. The volumes where images are clean of noise could suffer too much discards. Examples of proper and bad filtering could be shown in see figure \ref{fig:figs/nonzero_count_mean_exclusion.png}.
+
+\textbf{Non-Zero pixel mean intensity method}
+
+We define another approach to improve the last. We suppose that the noise has a low intensity value, thus the mean of intensity of Non-Zero values could be used as a better proxy of how much relevant information an image has. With this approach we define the distribution. The distribution of the mean intensity for Non-Zero pixels has a really strange shape. It could be similar to a power law, a very long right tail distribution. But no clear low-outliers could be defined to discard the irrelevant images. Distribution is shown in figure \ref{fig:figs/nonzero_pixel_mean_distribution.png}. Then, we define an low arbitrary threshold for the mean intensity value of Non-Zero pixels to determine whether an image is relevant or not. We set this threshold to Q1, as same as the above method. This method is more accurate than the Non-Zero count method as can be seen in . However, with this non-zero pixel mean intensity method, in some volumes too few images are discarded, adding irrelevant information to train dataset, such as volume IXI337 that can be seen in the figure \ref{fig:figs/nonzero_count_mean_exclusion.png}. 
+
+Finally we have saved a DataFrame in pickle format (\texttt{/src/1.DataPreprocessing/nonzero \_image\_data.pickle}) in which we have all the relevant metadata of this two experiments. It has 3 columns: image ID (with format volumeID\_sliceIDx), number of of Non-Zero pixels, and mean of intensity values of Non-Zero pixels.
+
+\imagen[0.9]{figs/nonzero_pixel_mean_distribution.png}{Distribution of mean of intensity of Non-Zero pixels per image.}
+
+\FloatBarrier
+
+\imagen[1]{figs/nonzero_count_mean_exclusion.png}{Example of discarded images with intensity-based  methods in some volumes: both red and yellow framed images are discarded. Double framed (yellow and red) is the limit image discarded. Left column is the Non-Zero intensity count method and right column is the Mean intensity Non-Zero values method.}
+
+\textbf{DeepBrain}
+
+Summarizing intensity-based methods
 \begin{itemize}
-    \item Capture: download from web.
-    \item Storage: Locally.
-    \item Preprocessing:
-    \begin{itemize}
-        \item Cleaning and filtering: clean corrupted data, filter no-needed data.
-        \item MRI needed preprocessing (FreeSurfer in \cite{pinaya2019}).
-        \item Feature engineering: Normalize, downsampling.
-        \item Data augmentation: Noise addition, crop parts, ¿Rotations?
-    \end{itemize}
-    \item Analysis: create autoencoder
-    \item \textbf{Visualization: Optional - Make some visualizations from results, layers or behavior of the autoencoder. Ver las capas de los kernels como se activan con las entradas, ver resultados de capas intermedias, ver gráficas de callbacks.}
-    \item Publication.
+    \item Nonzero pixel count is weak against noisy points and non-brain structures: it fails when there are lots of noisy points like a cloud. It also fails when there are some structures which are not a brain because the nature of the model is only count the number of nonzero pixels.
+    \item Non-Zero pixel mean intensity method is weak against the strange structures: it fails when there are very few points but very shiny. The nature of the model is compute the mean of nonzero pixels, so, method could break when some strange structures or shiny noisy points appears in the images.
 \end{itemize}
 
-\section{\TBD{Data Exploration}}
+The last, better and definitive approach for slice selection is based on \textbf{brain segmentation}. We know that the best proxy of how relevant a image is, is the amount of brain a image has because the relevant information is the information about the brain structure. So, Why not estimate the amount of brain straightforward instead of approximate it through intensity-based methods? Brain segmentation is very commonly used in neuroimaging so it would be nice to use an approach like this.
 
-First notebook: MRI data familiarization and nibabel familiarization. How to mange MRI, etc. Ids, spreadsheet of metadata, voxel sizes, shape sizes.
+Our method is to extract the amount of brain for each volume and select the slices with some brain (or a threshold of brain). The general idea is that there is no better proxy of how much information an image has than the amount of brain that this image has. However, build an accurate neural network for brain segmentation could be very difficult. Therefore, we will use a python library named \textbf{DeepBrain}, which uses a pre.trained neural network to perform brain segmentation.
 
- \begin{itemize}
-     \item 0.9375 x 0.9375 x 1.2 $mm^3  \rightarrow$ 576 volumes.
-     \item 0.9766 x 0.9766 x 1.2  $mm^3  \rightarrow$  5 volumes.
- \end{itemize}
+What is the golden tool? \myurl{https://github.com/iitzco/deepbrain}{DeepBrain}. This library returns a matrix with the probability of each pixel belongs to the brain. Then, we could set a mask and, finally (if necessary) segment our original image or, in our case, measure the amount of brain. This tool identify the brain using the whole volume, thus, is more accurate than treating a single slice. Another advantage is that only takes 3 seconds in getting the mask from a whole volume. As DeepBrain return a probability for each volume, we will count the True ($p>0.5$) values in the mask (number of pixels belonging to the brain) as a proxy of how much brain is there in the image.  Some examples of DeepBrain brain segmentation are shown in figure \ref{fig:figs/DeepBrainExample.png}
+
+\imagen{figs/DeepBrainExample.png}{Example of DeepBrain segmentation.}
+
+We are going to set a lower threshold of brain quantity to select the images: 4.5\% of brain quantity which is approximately 3000 pixels. With this threshold, we ensure that at least 4.5\% of the image pixels belong to the brain and we could retrieve relevant information from the slice. With this filtering, \textbf{we reduce the 2D image dataset from the original 86794 to 59278 relevant images}. This method is very accurate and outperforms the intensity-based ones. We show the image selection with DeepBrain method in figure \ref{fig:figs/DeepBrainImageSelection.png}. We realize this method filters just the relevant ones in contrast to intensity-based methods that filter less or more than necessary.
+
+\imagen{figs/DeepBrainImageSelection.png}{Example of discarded images with DeepBrain method in same volumes as intensity based methods: both red and yellow framed images are discarded. Double framed (yellow and red) is the limit image discarded. Red framed images has o brain pixels, and yellow framed has 0-3000 brain pixels.}
+
+We have coded some notebooks and scripts to develop this. We have extracted a pandas DataFrame in pickle format, with the brain quantity for each slice with format [volID\_idSlice - Brainquantity (i.e IXI562-Guys-1131-T1\_72, 16485)] named \texttt{deepbrain\-\_image\-\_data\-.pickle} created in \texttt{src/\-1.DataPreprocessing/\-1.Preprocessing\--IntensityInspection\--Select\-Rel\-evant\--Slicing\-.ipynb}. It is also store in csv format in \texttt{src\-/IXI-T1\-/slice\_\-brain\_\-quantity.csv}.  The final slice selection is done in a script called \texttt{deep\_brain\_slice\_selection.py} which also use a developed Class named DeepBrainSliceExtractor from module \texttt{deep\-\_brain\-\_slice\-\_extractor.py}. DeepBrainSliceExtractor Class params are: path where .nib volumes are stored and output path to save the PNG images, 2 DataFrame with test and train volume IDs and other DataFrame with the data of the brain quantity of each slice, in this case, the \texttt{deepbrain\-\_image\-\_data\-.pickle} explained above. The result relevant images in PNG are stored in \texttt{src\-/IXI\--T1\-/PNG\-/test\_folder\-/test} and \texttt{src\-/IXI\--T1\-/PNG\-/train\-\_val\-\_folder\-/train\-\_and\-\_val}. Data splitting is explained in section \ref{subsection:datasplitting}.
+
+\subsection{MRI Preprocessing}
+
+As aforementioned, relevant images extracted are stored in PNG format with size $256x256$. Images could be preprocessed in may ways  to potentially improve their quality. We made a small tutorial about some example ways of MR image potential enhancement using computer vision techniques (histogram equalization, center of mass centering, etc). This tutorial is made in the notebook  \texttt{src\-/1.\-DataPrep\-roc\-\-essing/\-0.\-Examples\-of\-MRI\-preprocessing\-.ipynb}. A common prepossessing technique used in images is contrast enhancement made with histogram equalization methods (HE). Histogram equalization sharpens or enhances image features, such as boundaries or contrast, for better graphical display and better analysis. However, although we see better the image, many low details could be modified and these low-details are the critical ones for neuroimaging analysis. It may increase the contrast of background noise, while decreasing the usable signal. Also histogram equalization can produce undesirable effects (like visible image gradient) when applied to images with low color depth \cite{histogrameq} \cite{histogrameq2}. We can see the effects of different HE methods in figure \ref{fig:figs/HE.png}.
 
 
-\section{\TBD{Data Preprocessing}}
+\imagen{figs/HE.png}{Different methods of histogram equalization \cite{histogrameq2}.}
+
+Therefore, we conclude that, \textbf{even though image enhancement is a way to improve the appearance of image to human viewers, it could be harmful to critical details of brain MR images} and we are not going to apply it to our brain magnetic resonance images.
+
+We only apply 2 preprocessing techniques to our brain slices: \textbf{downsampling and feature normalization}.
+\begin{itemize}
+    \item \textbf{Downsampling}: We downsample the images from $256x256$ to $128x128$ to speed-up the training with bilinear interpolation resizing method . With this size we still identify relevant brain structures. 
+    \item \textbf{Normalization}: We normalize the intensity of pixels of the image in the range [0-1]. It is very important the compatibility of normalization and activation function of the last layer of the neural network. If the possible range of the output and the range of the input are different, errors will be bigger and reconstruction may fail. Consequently we will use sigmoid function in last layer because it output range is also [0-1].
+\end{itemize}
+
+Both of these preprocessing techniques are made \textbf{on-the-fly} with a \textbf{customized Tensorflow Data Loade}r and with Tensorflow functions (\texttt{tf.image} and \texttt{tf.math} modules) to optimize the training speed. This Data Loader will be explained in section \ref{subsection:loader}.
+
+\section{Data Split}
+\label{subsection:datasplitting}
+
+We have to split the 59278 2D images in 3 sets: train, validation and split. We use 3 sets because we are going to several architectures, 2 loss functions and other comparable configuration. A validation dataset is a partition used to tune the hyperparameters (i.e. the architecture, regularization) of a classifier. Another critical aspect of data splitting is the independence of the data between partitions and also the similarity on the distribution of each partition. It comes from the \textbf{i.i.d} statement (independent and identically distributed). 
+
+We address the \textbf{data independence problem}, because exists a huge correlation between the near images of the same volume. For example, slice 45 and slice 46 of the same volume are going to be almost the same. These images, which are almost identical because they are near in the same volume, belong to different sets. This could lead to a big overfitting problem if both images are in different data partitions. If this happens with more similar images, the problem is obviously bigger. Therefore, we do not split the dataset straight from images. It is better to split it from volumes to avoid this big correlation.
+
+We also address the \textbf{identically distributed problem}. In this project, we obviously have no target label. However, we can stratify the example images through their metadata. We suppose that physical features have a potential impact in the brain structure, so the stratification by these features should be positive for the training, thus, we would like 3 data partitions retain the same distribution regarding \textit{sex, ethnic} and \textit{age}.
+
+In order to do this stratification, we follow these steps (made in notebook: \myurl{https://github.com/AdrianArnaiz/Brain-MRI-Autoencoder/blob/master/src/2.Experiments/0.TrainTestSplit.ipynb}{\texttt{src\-/2.Expe\-riments\-/0.Trai\-nTestSplit\-.ipynb}}): We map our images and \textit{Nifti} volumes to their metadata. We realize that were duplicated volumes, so the final number of volumes were \textbf{581}. We also discover that 18 out of 581 different volumes do not have any metadata, so the images of this 18 volumes will be placed in training set automatically. The remaining 563 volumes. The age distribution on the total population is $73.4\%$ of adults [25, 65), $19.2\%$ of elderly people [65, $\inf$) and $7,4\%$ of young people [0, 25). Sex are distributed like $55.6\%$ male and $45.4\%$ female. Finally, we have 7 values for ethnic, very skewed for white people, with a $80.11\%$ of the volumes, also there are ethnic values with only 1 or 2 volumes, so we only divide between white and others. Last has the remaining $19.89\%$. We developed a module with 3 functions to help in the composed stratification task. It has been coded in the file \texttt{\-src/\-2.Ex\-perim\-ents\-/strati\-fier\-\_complex.py}, and we have 2 functions: the first to get the report (quantitative table) with the number of samples of the stratification, and another function to get the stratified sample. This last function is the used for getting the samples. We divide the total dataset in 2 sets: one for train and validation (which will be splitted in train and validation set in the training script) and another for test. The IDs of each partition are stored in separated pandas DataFrame (as pickle). The columns of this sets are \textit{Volume\_IXI\_ID, Sex, Ethnic, Age\_Group, N\_Relevant\_Slices}. The files which have the list of IDs for each group are \texttt{data\-\_train\-\_val\-\_volumes\-\_df.pkl} and \texttt{data\-\_test\-\_volumes\-\_df.pkl}. As we explained before in section \ref{subsubsection:relevantsliceselection}, these 2 files are needed in the \textit{DeepBrainSliceExtractor} Class in order to make the selection of relevant slices and the stratified partition in the same script. 
+
+Once data is extracted and splitted, \textbf{the final sizes of each set are showed in table \ref{table:datasplit}}. Besides, we can see the correct stratification between partitions. The train\&validation/test distributions for each attribute are seen in figure \ref{fig:figs/stratification.png}.
+
+\imagen[1]{figs/stratification.png}{Train\&validation/test distributions for each attribute to show the correct stratification}
+
+\begin{table}[!ht]
+  \begin{center}
+   \setlength\extrarowheight{2pt} % for a bit of visual "breathing space"
+    \rowcolors {2}{gray!15}{}
+   \begin{tabular}{c c c c c}
+    \toprule
+    \textbf{Partition} & \textbf{Volumes} & \textbf{Images} & \textbf{Volume\%} & \textbf{Image\%}\\
+    \hline   
+    \textbf{Train}       & 454   & \textbf{46285}& $78.2\%$  & \textbf{78.1\%}       \\
+    \textbf{Validation}  & 80    & \textbf{8169} & $13.8\%$  & \textbf{13.8\%}       \\
+    \textbf{Test}        & 47    & \textbf{4824} & $8\%$     & \textbf{8.1\%}        \\
+    \hline
+    Total                & 581   & 59278        & $100\%$   & $100\%$               \\
+    \bottomrule
+    \end{tabular}
+    \end{center}
+    \caption{Data split}
+    \label{table:datasplit}
+\end{table}
+
+\FloatBarrier
+\newpage
+
+\section{Experiment}
+
+In the stage we are going to train several models with different characteristics to obtain an empirical comparison of the different strategies researched in the state of the art: different architectures, different loss functions, different residual building blocks, regularization and no regularization, and finally, the experiment with a new proposed architecture. Before starting the architecture and model explanations, we are going to offer an explanation of the development environment, the customized Tensorflow data loader designed to optimize the speed and ease of the training and the augmentation.
+
+\subsection{Environment}
+
+In the first place, I want to highlight we wanted to run the experiment locally. The main reason is the opportunity to develop a very optimized environment in terms of speed of data-loading and parallelism between training and data loading. We have the opportunity with this Master's thesis because later, when we develop real applications, cloud training is going to be more common, or, in the case of on-premise training, the situation would be more critical. Therefore, \textbf{we are going to face the speed optimization problem executing these experiments on local device}, pushing the boundaries of the hardware and giving more importance to the quality of the software developed. This problem could be scaled in future situations, where we will have to train bigger models with tons of data in the cloud.
+
+We are using a HP OMEN Laptop with 16 GB of RAM, a Intel i7-9750H 2.6GHz processor and a NVIDIA GeForce GTX 1660 Ti with 6GB of GDDR6 RVAM. The operating system is Windows 10. With 6GB of VRAM is obvious that all images and weights of the model does not fit on it, so we will develop a custom data loader to read, preprocess and augment the images on-the-fly and in the fastest way. This data loader will be explained in section \ref{subsection:loader}.
+
+The code was developed in Python language. We have used several libraries, but most important are the ones related to neural networks. The Python version is 3.7.9. We use Tensorflow-gpu 2.3.1 which has the Keras 2.4.0 library built-in the module \texttt{tf.keras}. We configured CUDA 10.1 and cuDNN 7.6.5. We have to highlight that every step of the training, included the data loader, data augmentation and customized loss functions are coded with Tensorflow. This aspect make the training faster using only Tensorflow (and Keras) modules and functions due to the fact that Tensorflow builds a graph to optimize the computation and, if external libraries are used, the speed and high-performance decreases. This set-up is also explained in \texttt{src/\-0.Set\-\_up/\-GPU\_TF\_\-enviroment.ipynb}.
+
+\subsection{Data Generator with augmentation}
+\label{subsection:loader}
+
+We faced the challenge of create a optimized data loader, which has to \textbf{load batches of images on-the-fly and perform image preprocessing and augmentation in a optimized and parameterizable way}. Fist of all, we created a data loader that loads \textit{numpy} files instead of images, but we discard this approach because reading \textit{numpy} files is slower than reading images.
+
+We compare 3 approaches \textit{Keras ImageDataGenerator.flow\_from\_directory}, a customized \textit{Keras Data loader} implementing \textit{Sequence} interface and, finally, a customized \textit{Tensorflow Data Loader}, using \texttt{tf.data} module. We made a simple experiment (same architecture, parameters and data) to compare all of them. The original \textit{Keras ImageDataGenerator} takes a mean of 5:12 minutes to run an epoch, the customized \textit{Keras Data loader} takes a mean of 2:35 minutes to run an epoch and, finally, our customized \textit{Tensorflow Data Loader} takes a mean of 1:12 minutes to run an epoch. We will explain what we do in next paragraph, but the summary of the reason of the speed of the last data loader is that is coded whole in Tensorflow. First, Tensorflow builds a computational graph, and this is more efficient if all of the steps are made with native Tensorflow functions. We have coded the disk load, the normalization, resizing and image augmentation with native TF functions. Second, the \texttt{tf.data} module provides functions to perform parallelism, cache data and other functionalities to load while training and make the train even faster.
+
+So, out data loader is coded in a class named \textit{tf\_data\_png\_loader} in the module \texttt{src\-/2.Experiments\-/my\_tf\_data\-\_loader\-\_optimized\-.py}. We coded this class to ease the creation of data loaders. With this we only have to create the class and pass the parameters: list of files path, batch size, desired size of the images, if the data is for training and if we want augmentation while data is loading. With this we obtain a object \textit{tf.data.Dataset} which dynamically will load the data in the Keras model. The steps of this DataLoader are the following:
+\begin{enumerate}
+    \item We read all the files paths as \textit{tf.Tensors}.
+    \item Read PNG, resize and normalize image in a parallel way using native TF functions to realize all these steps and calling with a map call to the dataset and the parameter number of parallel call set to AUTOTUNE.
+    \item We use \textit{shuffle} function to randomly shuffles the elements of this dataset. We also use \textit{repeat} function which is needed to repeat the dataset in training time.
+    \item We augment the images (if required) on-the-fly and in a parallel way (mapping a \textit{tf.Dataset}). Every augmentation and creation of randomness is made with Tensorflow functions. Data augmentation is explained in section \ref{subsection:dataaug}.
+    \item But the main advantage is made by \textit{batch} and \textbf{prefetch} functions. The former allow us to read, resize and augment images in batches. For example, if we had a batch of 16 images, a multiplication is only needed instead of 16. We already know how batches works in the model, but with this function, this improvement is also made in the load and the augmentation. The latter is even more important to speed up the training. \textit{Prefetch} function allows later elements to be prepared while the current element is being processed. This often improves latency and throughput.
+    \item Friendly remember: \textbf{every step is made on-the-fly while model is training or evaluating}.
+\end{enumerate}
+
+\subsection{Data Agumentation}
+\label{subsection:dataaug}
+
+Real time image augmentation is widely used in computer vision algorithms. The data augmentation allow to increase the size of training data and without using any disk space as it is made on-the-fly. This way, every image showed to our algorithm is going to be slightly different each epoch avoiding overfitting. With the proper data augmentation we force to the algorithm to learn how to encode the structure of a healthy brain instead of only copy the input. This leads to better learning of the representation of the healthy brain in latent space. Therefore, avoiding the \"copy\" overfitting, the reconstruction of brain MRI would be better, and we would be able to remove noise or fill empty parts not because the autoencoder remove noise, but because our autoencoder only knows hot to encode and decode the structure of the healthy brain.
+
+Consequently, data augmentation techniques must be aligned with our goal. Adding more and more augmentation techniques is not always helpful. A clear example is in MNIST dataset, where flipping the 9 give us the number 6. For example flipping or rotation is not useful in this project. We only want to know how a brain looks like, how to represent a healthy brain in a latent space of lower dimension, thus, we do not really want our autoencoder to rotate images. In addition, when using an autoencoder like this in a production environment, the one who uses the trained model will to give the model an input image in the correct orientation. 
+
+We are going to add randomly 4 augmentations to the image. Each augmentation technique will be added with a random level and intensity. So while training, the model could get from an original input image to a fully augmented one (every augmentation is added at max level). The augmentations are added with functions from \textbf{Tensorflow and Tensorflow-addons} libraries. We use pixels \textbf{Dropout} with a random value between 0 and 5\%. The \textbf{Gaussian noise} is applied to the image with a random standard deviation between 0 and 0.04. We \textbf{Blank Out} a region with a probability of 20\%. The position and size of the black square is also random. It could be in any random position and the size of the side of an square goes from 10 to 40 pixels. Finally, \textbf{Blur} is made with a Gaussian 2D filter with sigma 0.6 with a probability of 10\%. This augmentation process is made on-the-fly and in a parallel way by customized Tensorflow data loader explained in the section \ref{subsection:loader}. The examples of augmentations are shown in figure \ref{fig:figs/augmentations.png}.
+
+\imagen{figs/augmentations.png}{Examples of augmented images.}
+
+
+The \textbf{value of the current augmentations} added are the following: they cover, corrupt or modify the real brain structures (through dropout, noise, blurring or cuts-out) so the model has to learn to recover this covered or corrupted information. Dropout could represent lacks of  intensity measures for a voxel. The Gaussian noise could represent the deviation in this same measures. Region blank-out could represent corrupted images due to bigger problems or even a small lesson which would be in-painted by the autoencoder. The Gaussian blurred could represent artifacts or lack of definition due to some reasons (like up-sizing),
+
+%%%%ARCHITECTURES
+\subsection{Architectures definition}
+
+This section will explain all the architectures we have trained in our experiments. We have made experiments with several architectures, different losses functions, with and without regularization and with and without data augmentation. Obviously we already know the result of the last comparison (data augmentation), but we want to test it quantitatively and empirically. In this section, we only regard the explanation of architectures, their building blocks, and their foundations. The specific experiments (regularization, losses, etc) will be explained deeper in section \ref{subsection:experiments}.
+
+We wanted to pursue 2 purposes with the experiment. First, and the main one, the \textbf{comparison of residual architectures and convolutional architectures with skip-connections besides of the novel benefits of the combination of both} as we explained in the state of art \ref{chapter:stateofart}. Second, create very shallow optimized architectures. The creation of architectures with fewer and fewer weights through the optimization of the connections and is one of the guidelines of Deep Learning. For example, residual networks come from this topic. We already know that a very deep residual network could lead to a optimal performance, but there are some downsides. First, big networks take too much train to train (even residual, although less than common convolutional). Second, the Internet Of Things breakthrough lead us to search for very light models that could work in these low-memory devices.
+
+Therefore, considering these two guidelines we have defined 5 different \footnote{Cheat Sheet of all architectures is in \url{https://github.com/AdrianArnaiz/Brain-MRI-Autoencoder/blob/master/ArchitecturesDiagram.svg}}{architectures} with similar decoder architecture.
+
+\begin{itemize}
+    \item Shallow residual autoencoder:
+    \begin{itemize}
+        \item Original building block.
+        \item Full-pre-activation building block
+    \end{itemize}
+    \item Skip connection convolutional autoencoder.
+    \item Myronenko Autoencoder: based on the encoder of Myronenko research \cite{myronenko20183d}.
+    \item Residual U-NET: architecture proposed in this project and arise from the combination of U-NET and residual building blocks.
+\end{itemize}
+
+\textbf{We would like to emphasize that neither the architectures use \textit{Max Pooling} functions to reduce feature maps, nor does it use \textit{Upsampling} to increase their size.} The former idea comes from the fact that pooling discards useful image details that are essential for these tasks \cite{superresolution}. The latter comes from the intuition that increasing the size of feature maps with a more complex function such as \textit{Conv2DTranspose} could be more helpful to the reconstruction than the \textit{Upsampling} method. So all of them are going to use \textbf{strides with value 2} to reduce or increase the size.
+
+%%%% Residual archs
+\subsubsection{Shallow Residual Autoencoders}
+\label{section:residualarchs}
+
+We have discussed the benefits of Residual blocks in the training and optimization of Neural Networks in the state of the art \ref{chapter:stateofart}. As we explained, benefits comes from the building block, which have skip-connections to force the neural network to learn the residuals. However, there are several kinds of \textbf{building blocks} regarding the order of activation function, batch normalization, weights and addition. The \textbf{original} one is shown in figure \ref{fig:figs/ResidualBlock.png}. But another identity blocks has been researched. A very good research with excellent results was made by Kaiming He et. al. in 2016, concluding that \textbf{full pre-activation block} (where BN and ReLU are both adopted before weight layers) throws promising results \cite{identityblocksmicrosoft}. Therefore, we are going to 2 architectures with the only difference of the type of building blocks. Both building blocks are defined in figure \ref{fig:figs/resbuildingblocks.png}. We implemented the building blocks with convolutions of kernel size 3, stride 2 if downsampling is required, and a convolution in the skip connection if we need to match the number of filters. They are also built with \textit{BatchNormalization} Layers and Rectified Linear Unit activation function (\textbf{\textit{ReLu}}) The order of the layers are defined by the type of block.
+
+We built 2 architectures with the only difference of the type of the building block. Obviously, our autoencoders starts with the \textbf{encoder} part. This architectures have an initial \textit{Convolutional} Layer with 32 filters with a kernel of dimension $3x3$, stride 2 and padding \textit{same} to downsample the image to half size (64) and increase the number of filters to 32. Then we add a residual building block with downsampling which increases the number of filters to 64 and reduces the dimension of features map to half (32). To continue we add another residual building block with neither downsampling nor feature map addition, so we keep 64 filters of $32x32$. Finally, we add another residual block with downsampling to reduce the size of the feature maps to 16 and increase the number of filters to 128, thus, this latent space has $16x16x128$ dimension. In this point we start our decoding task with the \textbf{decoder}. The building blocks of the decoder are made of a \textit{Con2dTranspose} Layer with stride 2 to upsample the image to double size, followed by a \textit{BatchNormalization} Layer and a \textit{ReLu} as is seen in figure \ref{fig:figs/decoderbuildingblock.png}. Each of 3 decoder building blocks upsample the image to double size and reduces the number of filters in half. Finally, we have a \textit{Convolutional} Layer to reduce the number of filters from 16 to the 1 desired for the output. This last layer has a \textbf{sigmoid} activation function to get pixel intensities from 0 to 1, like the normalized inputs.
+
+\imagen[1]{figs/resbuildingblocks.png}{Residual building blocks used for residual autoencoders.}
+
+\imagen[0.6]{figs/decoderbuildingblock.png}{Upsampling block used in the decoder.}
+
+Both architectures are coded in the file \textbf{ \texttt{src/2.Experiments\-/residual\_cae.py}}. This script uses flag parameters for allowing simple configuration of what building block we want to use and if regularization is used. The final diagram of both architectures is shown in \ref{fig:figs/residualarchitectures.png}.
+
+\imagen{figs/residualarchitectures.png}{Shallow Residual Autoencoders.}
+
+
+%%%% Myronenko archs
+\subsubsection{Myronenko Autoencoder}
+
+We also wanted to develop a more complex, but still shallow, residual architecture. With this goal we implemented an Autoencoder based on the \href{https://github.com/IAmSuyogJadhav/3d-mri-brain-tumor-segmentation-using-autoencoder-regularization}{encoder branch which Myronenko used in his project for BRATS 2018} \cite{myronenko20183d} to regularization. Although we use our decoder, the encoder part is the same that Myronenko used, but going one less level in the size downsampling and number of filters. Every building block used in this architecture has already been explained in last section \ref{section:residualarchs}. This architecture is built with \textit{Convolutional} Layers, full-pre-activation residual building blocks and the already explained upsampling blocks. The main difference is the number of layers and the downsampling order. In this case, the image downsampling is made by a \textit{Convolutional} Layer with stride 2, but outside the residual block instead of inside it like before. This architecture includes also a \textit{SpatialDropout} Layer. Layer configuration (number of filters, downsampling, number and order of layers, etc) is shown in the Myronenko architecture diagram in figure \ref{fig:figs/myronenkoarch.png} and coded in the file \textbf{\texttt{src/2.Experiments\-/residual\-\_cae\-\_myronenko.py}}. Latent space is $16x16x128$ again.
+
+\imagen[1]{figs/myronenkoarch.png}{Myronenko based autoencoder.}
+
+%%%%Skip CAE
+\subsubsection{Skip Connection Convolutional Autoencoder}
+
+The other big advance in segmentation and reconstruction architectures comes from the skip connections. As aforementioned in the state of the art \ref{chapter:stateofart}, this skip connections are not the ones of residual building blocks. This skip connections are wider and connects encoder layers to decoder layers. Although the interpretation of latent space becomes more abstract if this technique is used, architectures with skip connections have shown a better performance due to the \"leak\" of information to the decoder part, where the decoder will learn how to combine the details of the latent space and the details of the feature maps from the encoder part \cite{superresolution} \cite{2020inpainting} \cite{pinaya2019}. This connections helps in the backpropagation to earlier layers and also in the detail reconstruction in the decoder. Some outstanding architectures such as FCN8 or U-Net uses this concept.
+
+Therefore, we built an architecture with \textit{Convolutional} Layers and skip connections, kind of Fully Convolutional Network with skip connections. This architecture do not use residual blocks. The skip connections added in this architecture are going to \textbf{add} the encoder layer to the correspondent decoder layer, so the decoder dimension would be the same. This autoencoder is built with 3 \textit{Convolutional} Layers, each one is followed by a \textit{BatchNormalization} and a \textit{ReLu} function. Each one of this \textit{Convolutional blocks} (\textit{Conv}-\textit{BN}-\textit{ReLu}) downsize the image in half and double the number of filters, so finally our latent space is $16x16x128$ again. The skip connections goes from the output of the \textit{BatchNormalization} of the \textit{Convolutional block} of 1st and 2nd encoder layers, to the output of the \textit{BatchNormalization} of the 1st and 2nd decoder layers, thus, decoder block is also a little bit different because it incorporate an addition operation in the middle. This decoder block is seen in figure \ref{fig:figs/decoderskipcae.png}. The whole architecture is shown in figure \ref{fig:figs/skipconcae.png} and it is coded in file \textbf{\texttt{src/2.Experiments\-/skip\_conne\-ction\-\_cae.py}}
+
+\imagen[0.7]{figs/decoderskipcae.png}{Decoder building block for Skip connection CAE.}
+
+\imagen{figs/skipconcae.png}{Skip connection CAE Architecture.}
+
+%%%% Res U-Net
+\subsubsection{Residual U-NET Autoencoder}
+\label{section:resunet}
+
+Finally, we present our \textbf{proposed method} to research the benefits of residual blocks and skip-connection combinations. We have built a U-Net autoencoder with full-pre-activation residual building blocks. U-Net is also explained in state of the art and refers to a Fully Convolutional Network with \textbf{skip connections with concatenation} instead of addition. This way, it double the number of feature maps in the decoder part, and an improvement is shown in medicine segmentation tasks. Using concatenation instead of addition, the decoder network has the burden of make a complex operation instead of simply add it element-wise. With this architecture, \textbf{we combine these U-Net advantages with the advantages of skip connections (also inherit of U-Net) and with the aforementioned advantages of the residual building blocks}.
+
+Regarding this, we add skip connections with concatenation to the shallow residual network with full-pre-activation building blocks already explained in section \ref{section:residualarchs}. Therefore, the diagram of the network, with the details of the connections, downsampling and feature maps is shown in figure \ref{fig:figs/resunet.png} and coded in file \textbf{\texttt{src/2.Experiments\-/res\_sk\-ip\_cae.py}}.
+
+\imagen[1]{figs/resunet.png}{Residuel U-Net Architecture.}
+
+
+%%% Experiments
+\subsection{Experiments}
+\label{subsection:experiments}
+
+As we explained before, we want to compare these shallow architectures to obtain the best one. Also, we want to compare another features: the consequences of the use of data augmentation, the effects of L2 regularization, and the differences in learning between\textbf{ Mean Square Error} (MSE) and \textbf{structural DiSSIMilarity} (DSSIM) losses. Consequently we started with a sample experiment training some models without data augmentation and MSE loss. As we know that data augmentation is needed, we did only a few experiments without it, placing on all the importance of the project in the experiments with data augmentation. With data augmentation we trained the architectures both with MSE and DSSIM losses. In addition, L2 regularization was added to some of them to discover the effect. However, every architecture was not trained with and without L2 because the number of experiments wuold have been huge, so we consider that a consistent experiment regarding regularization is beyond the scope of this project. Every model trained was tested quantitatively with MSE, DSSIM and \textbf{Peak Signal to Noise Ratio} (PSNR) as well as qualitatively.
+
+Our models use \textbf{100 epochs} for training with a \textbf{batch size of 32}. We use \textbf{RMSProp optimizer} which divides the gradient by a running average of its recent magnitude. We configure the \textit{Early Stopping} callback with a patience of 20 and a min delta of $2e-7$ if MSE loss is used or $5e-5$ if DSSIM loss instead. To optimize the training and lead it to a better convergence we use \textbf{ReduceLROnPlateau} which reduces the learning rate by a factor of 0.2 if the validation loss does not improve in 4 epochs. The min improvement also depends on the loss used.
+
+We have coded a parametrizable python script to ease the training of the models. We only have to write the name of the architecture, a \textit{boolean} to set the augmentation, the name of the loss metric, a \textit{boolean} to set regularization, and the name of the residual building block used (only relevant if architecture allows residual blocks). With only this information our script configures all the experiment: creation of folder to save the model checkpoint, the Keras diagram and the \textit{csv} of training metrics; creation of customized data loader; configuration of callbacks and its parameters: \textit{CSVLogger}, \textit{ModelCheckpoint} and \textit{Earlystopping}; configuration of learning rate reducer and running of the experiment. When train has finished, we have a folder with the aforementioned documents, each one with self-explanatory name. This is coded in \textbf{\texttt{src\-/2.Experiments\-/residual\_cae\-\_experiment.py}}. The L2 kernel regularizer is used with a value of $1e-5$ if regularization is established.
+
+
+\textit{TestMetricWrapper} Python class has been coded with the goal of ease \textbf{quantitative and qualitative evaluation}. Class inputs are the paths of test images and the path of the model folders. With this information, this class give us some charts about the training steps, quantitative test metrics, and some qualitative examples. We also have a function on this class which allow us to perform a customized augmentation on a desired image and to plot the reconstruction of every model. The module is \textbf{\texttt{src\-/2.Experiments\-/create\_te\-st\_report.py}} and the class name is \textit{TestMetricWrapper}. It is used in the \textbf{evaluation notebooks}: \texttt{src\-/2.Ex\-periments\-/2.Exp\-\_NoDAug\-\_MSE.ipynb}, \texttt{src\-/2.Ex\-periments\-/3.1.Exp\-\_DAug\-\_MSE.ipynb}, \texttt{src\-/2.Ex\-perim\-e\-nts\-/3.2.Exp\-\_DAug\-\_DSSIM.ipynb} and \texttt{src\-/2.Ex\-periments\-/4.4.Evaluation\-\_custom\-\_corrup\-tions\-.ipynb}
+
+\subsubsection{Metrics}
+
+MSE error is measured as the mean intensity pixel-wise squared error between 2 images. Besides, as SSIM is used to measuring the similarity between two images, we used DDSIM to compute the dissimilarity and being able to minimize it when used as loss function. Finally, PSNR gives the peak error in the output image. The value of this parameter should be large, as it represents the ratio of signal power-to-noise power, noise power should be minimum. PSNR is not used as loss, only as test metric. 
+
+$$MSE = \frac{1}{n} \sum^{n}_{i=1}(Y_i-\hat{Y}_i)^2; PSNR=10\times \log_{10}\frac{peakval^2}{MSE(x,y)}; DSSIM = \frac{1-SSIM(x,y)}{2}$$
+
+
+\subsubsection{Without data augmentation}
+
+To start with simple experiments, we compared the following architectures without data augmentation: Shallow residual autoencoder with original block,  Shallow residual autoencoder with full-pre-activation block, Shallow residual autoencoder with full-pre-activation block and L2 regularization, Myronenko autoencoder, Myronenko autoencoder with regularization and Skip Connection CAE.
+
+\imagen[0.7]{figs/lossvaltrainnoaug.png}{MSE evolution in the training of models without data augmentation.}
+
+The evolution of training loss (MSE) is shown in \ref{fig:figs/lossvaltrainnoaug.png}. We could see the quickly convergence of the methods, with convergence made mostly in less than 40 epochs. The table \label{table:expnodaug} showcases the best model is \textbf{Skip Connection CAE} both in validation MSE and test MSE, DSSIM and PSNR. This big difference with the other methods could also be seen in \ref{fig:figs/testmetricsnoaug.png}. Most of test metrics are outstanding, showing a good reconstruction of the test set. We also realize the big similarity between validation and test loss (MSE). This similarity is a proxy of the good stratification of our dataset and that we do not notice overfitting. The \textbf{shallow residual CAE with full-pre-activation blocks} shows also a very good performance, being better than the original block. In addition, the first intuition about L2 regularization is the fact that the same model but with regularization has lower test metrics. We are not going beyond in the explanation in this moment, we will analyze it better with the augmentation results.
+
+\begin{table}[!ht]
+  \begin{center}
+   \setlength\extrarowheight{2pt} % for a bit of visual "breathing space"
+    \rowcolors {2}{gray!15}{}
+   \begin{tabular}{c c c | c | >{\bf}c c c}
+    \toprule
+    \textbf{Model} & \textbf{loss}  & \textbf{L2}  & \textbf{Val loss}  & \textbf{MSE}               & \textbf{DSSIM} & \textbf{PSNR} \\
+    \hline   
+    \textbf{Skip connection CAE}   & MSE & No  & \textbf{1.10e-5}   & \textcolor{blue}{1.07e-05} &\textbf{ 1.04e-03} &		\textbf{49.8} \\
+    \textbf{Shallow RES full-pre}  & MSE & No  & 3.92e-5            & 3.82e-05                   & 2.64e-03	&	44.4\\
+    \textbf{Shallow RES full-pre}  & MSE & Yes & 1.10e-4            & 8.56e-05                   & 4.90e-03	&	41.0 \\
+    \textbf{Shallow RES orignial}  & MSE & No  & 1.11e-4            & 1.09e-04                   & 1.40e-02	&	39.7 \\
+    \textbf{Myronenko CAE}         & MSE & No  & 1.83e-4            & 1.81e-04                   & 5.59e-03	&	37.7 \\
+    \textbf{Myronenko CAE}         & MSE & No  & 1.47e-3            & 1.27e-03                   & 4.40e-02	&	29.3 \\
+    \bottomrule
+    \end{tabular}
+    \end{center}
+    \caption{Validation and Test metrics for experiments without data augmentation}
+    \label{table:expnodaug}
+\end{table}
+
+\imagen[1]{figs/testmetricsnoaug.png}{Bar charts of test metrics for experiments without data augmentation.}
+
+We have shown a very good test metrics. But qualitative reconstruction is seen in figure \ref{fig:figs/nodaug-qualitative.png}. We realize that all models have a very good reconstruction performance when the data is clean. However, Myronenko+L2 gives slightly blurry output images, this is the reason because its test metrics are higher. When input data is corrupted, all methods are limited to copying the input, but Myronenko+L2 removes the dropout pixels with the downside of blurring. This is a very interesting fact: although we have trained the method without data augmentation, it is able to reconstruct some corruptions.
+
+\imagen[1]{figs/nodaug-qualitative.png}{MRI reconstruction of non-augmented models from an clean input and another corrupter one.}
+\FloatBarrier
+
+%%% DATA AUGMENTATIOON
+\subsubsection{With data augmentation}
+
+We have encouraging results with the models without data augmentation: almost every architecture is able to reconstruct a brain MRI with a huge similarity even in lower-details. We also notice that it are not able to reconstruct any image using their knowledge of how a healthy brain looks like. However, we want our models to be improved by the aforementioned benefits of data augmentation. In this experiments we went beyond the residual architectures and the skip connection ones: we propose a new architecture combining residual and U-Net as explained in section \ref{section:resunet}. Considering the above results, the models trained in this stage was: Shallow residual full-pre, Shallow residual full-pre+L2, Skip Connection CAE, Skip Connection CAE+L2, Myronenko CAE and the proposed Residual U-NET autoencoder. We trained each model optimizing both \textbf{MSE and DSSIM losses}, thus we have 12 final models with data augmentation.
+
+First of all, we can see that the evolution of validation loss (figure \ref{fig:figs/lossvalaug.png}) is more stable than the evolution without data augmentation, but, even so, the convergence is still very fast. 
+
+\imagen{figs/lossvalaug.png}{Evolution of validation loss on augmented models.}
+
+Table \ref{table:expaug} shows the results of every model. It shows the model architecture, loss and configuration in the first 3 columns; best validation loss in the 4th column measured in the loss metric; then, it shows the MSE, DSSIM and PSNR metric on test set. In each column, result is shown in bold-style. However, in one column the best value is formatted in bold-blue and the others in bold. This column is the test metric of the trained loss. We realize \textbf{our proposed method (RES-UNET) outperforms quantitatively every model else regarding every test metric}. This method is the best trained with both loss functions. To continue, if we focus in comparison of regularization we can observe one clear fact: on one hand \textbf{L2 regularization is helpful when the model optimizes DSSIM loss and on the other handn this L2 regularization decreases the performance for methods that optimizes MSE loss}. Deeper conclusion and comparisons will be made in section \ref{section:results}.
+
+
+
+%%%%%
+%% COMENTARIO DE LAS TABLAS SEPARADAS EN VEZ DE JUNTAS
+%%%%%
+\iffalse
+\begin{table}[!ht]
+  \begin{center}
+   \setlength\extrarowheight{2pt} % for a bit of visual "breathing space"
+    \rowcolors {2}{gray!15}{}
+   \begin{tabular}{>{\bf}c c c | c | >{\bf}c c c}
+    \toprule
+    Model & \textbf{loss}  & \textbf{L2}  & \textbf{Val loss}  & \textbf{MSE}   & \textbf{DSSIM} & \textbf{PSNR} \\
+    \hline   
+    Residual U-NET        & MSE & No  & \textbf{3.58e-05}  & \textcolor{blue}{3.44e-05}   & \textbf{2.95e-03}	& \textbf{44.9}\\
+    Shallow RES full-pre  & MSE & No  & 1.55e-04           & 1.51e-04	                    & 6.75e-03	            & 38.6\\
+    Skip connection CAE   & MSE & Yes & 2.69e-04           & 2.25e-04	                    & 1.65e-02	            & 36.8\\
+    Skip connection CAE   & MSE & No  & 3.10e-04           & 2.99e-04	                    & 9.36e-03	            & 35.7\\
+    Myronenko CAE         & MSE & No  & 3.38e-04           & 3.27e-04	                    & 1.57e-02	            & 35.1\\
+    Shallow RES full-pre  & MSE & Yes & 3.72e-04           & 3.24e-04	                    & 1.14e-02	            & 35.2\\
+    \bottomrule
+    \end{tabular}
+    \end{center}
+    \caption{Validation and Test metrics for experiments with data augmentation and MSE Loss.}
+    \label{table:expaugMSE}
+\end{table}
+
+
+\begin{table}[!ht]
+  \begin{center}
+   \setlength\extrarowheight{2pt} % for a bit of visual "breathing space"
+    \rowcolors {2}{gray!15}{}
+   \begin{tabular}{>{\bf}c c c | c | c >{\bf}c c}
+    \toprule
+    Model & \textbf{loss}  & \textbf{L2}  & \textbf{Val loss}  & \textbf{MSE}   & \textbf{DSSIM} & \textbf{PSNR} \\
+    \hline   
+    Residual U-NET        & DSSIM & No  & \textbf{1.504e-03}& \textbf{7.49e-05} & \textcolor{blue}{1.44e-03} & \textbf{41.8}  \\
+    Shallow RES full-pre  & DSSIM & Yes &  4.42e-03        &  2.34e-04        & 3.70e-03	                 & 36.7       \\
+    Shallow RES full-pre  & DSSIM & No  &  4.19e-03        &  2.88e-04        & 4.14e-03                     & 35.9       \\
+    Myronenko CAE         & DSSIM & No  &  4.39e-03        &  6.69e-04        & 4.31e-03                     & 32.1        \\
+    Skip connection CAE   & DSSIM & Yes &  4.82e-03        &  4.08e-04        & 4.38e-03                     & 34.2        \\
+    Skip connection CAE   & DSSIM & No  &  4.90e-03        &  4.57e-04        & 4.71e-03                     & 33.7        \\
+    \bottomrule
+    \end{tabular}
+    \end{center}
+    \caption{Validation and Test metrics for experiments with data augmentation and DSSIM Loss.}
+    \label{table:expaugMSE}
+\end{table}
+\fi
+
+%%%% TABLA AUGMENTATION TODA JUNTA
+\begin{table}[!ht]
+  \begin{center}
+   \setlength\extrarowheight{2pt} % for a bit of visual "breathing space"
+    \rowcolors {2}{gray!15}{}
+   \begin{tabular}{>{\bf}c c c | c | c c c}
+    \toprule
+    Model & \textbf{loss}  & \textbf{L2}  & \textbf{Val loss}  & \textbf{MSE}   & \textbf{DSSIM} & \textbf{PSNR} \\
+    \hline   
+    Residual U-NET        & MSE & No  & \textbf{3.58e-05}  & \textbf{\textcolor{blue}{3.44e-05}}   & \textbf{2.95e-03}	& \textbf{44.9}\\
+    Shallow RES full-pre  & MSE & No  & 1.55e-04           & \textbf{1.51e-04}	                    & 6.75e-03	            & 38.6\\
+    Skip connection CAE   & MSE & Yes & 2.69e-04           & \textbf{2.25e-04}	                    & 1.65e-02	            & 36.8\\
+    Skip connection CAE   & MSE & No  & 3.10e-04           & \textbf{2.99e-04}	                    & 9.36e-03	            & 35.7\\
+    Myronenko CAE         & MSE & No  & 3.38e-04           & \textbf{3.27e-04}	                    & 1.57e-02	            & 35.1\\
+    Shallow RES full-pre  & MSE & Yes & 3.72e-04           & \textbf{3.24e-04}	                    & 1.14e-02	            & 35.2\\
+    \hline 
+    \hline 
+    Residual U-NET        & DSSIM & No  & \textbf{1.50e-03}& \textbf{7.49e-05} & \textbf{\textcolor{blue}{1.44e-03}} & \textbf{41.8}  \\
+    Shallow RES full-pre  & DSSIM & Yes &  4.42e-03        &  2.34e-04        & \textbf{3.70e-03}	                 & 36.7       \\
+    Shallow RES full-pre  & DSSIM & No  &  4.19e-03        &  2.88e-04        & \textbf{4.14e-03}                     & 35.9       \\
+    Myronenko CAE         & DSSIM & No  &  4.39e-03        &  6.69e-04        & \textbf{4.31e-03}                     & 32.1        \\
+    Skip connection CAE   & DSSIM & Yes &  4.82e-03        &  4.08e-04        & \textbf{4.38e-03}                     & 34.2        \\
+    Skip connection CAE   & DSSIM & No  &  4.90e-03        &  4.57e-04        & \textbf{4.71e-03}                     & 33.7        \\
+    \bottomrule
+    \end{tabular}
+    \end{center}
+    \caption{Validation and Test metrics for experiments with data augmentation.}
+    \label{table:expaug}
+\end{table}
+
+\textbf{Qualitative} brain MRI reconstructions made by models trained with data augmentation are shown in figure \ref{fig:figs/daug-mse-qualitative.png} for methods which optimize MSE and in figure \ref{fig:figs/daug-dssim-qualitative.png} for methods which optimizes DSSIM. We choose a fully-augmented image to test the Reconstruction capability of the methods. \textbf{Residual U-Net}, the proposed method, provides the best reconstruction both for MSE and DSSIM loss models, showing that it is able to remove noise, dropout and blurring and being able to fill the blanked out region. We can see how this model is the more accurate filling the blanked-out region, being the unique which gives a good reconstruction of the limit region between the skull and the brain. Most of the remaining models are also prominent in all reconstruction tasks except filling blanked-out regions.
+
+\imagen[0.95]{figs/daug-mse-qualitative.png}{Reconstruction of corrupted input made by MSE-Augmented methods. Green-framed-image is the one chosen as the best reconstruction.}
+
+\imagen[0.95]{figs/daug-dssim-qualitative.png}{Reconstruction of corrupted input made by DSSIM-Augmented methods. Green-framed-image is the one chosen as the best reconstruction.}
+
+Deeper conclusions are going to be discussed in the nest Results Section \ref{section:results}.
+
+\section{Results}
+\label{section:results}
+
+To obtain statistical significance for the metric difference to support our conclusions, we computed the t-test for each pair of methods. We are comparing the different models with augmentation, through it test measures, so the t-test should be the dependent t-test due to the test samples are the same for all models. We applied a pairwise-models dependent sample t-test (figure \ref{eq:ttest}) with 4823 degrees of freedom, and the result is shown in figure \ref{fig:figs/ttest-pvals.png} where pink, purple and black boxes represent significant difference between the methods. Due to big the biog size of the test set, most of the differences are significant even though they are small. Due to this significance, our results and conclusions are supported by this statistical test.
+\begin{equation}
+t = \frac{MSE_1 - MSE_2}{\sqrt{\frac{S_D}{\sqrt{N}}}}
+\: \: \: \: \: \: \: \: 
+S_D = \sqrt{\frac{\sum_i^{N_{test}}(MSE_{1_i}-MSE_{2_i}) - \frac{\sum_i^{N_{test}}(MSE_{1_i}-MSE_{2_i})^2}{N_{test}}}{N_{test}-1}}
+\label{eq:ttest}
+\end{equation}
+
+\imagen[1]{figs/ttest-pvals.png}{P-values for t-test pairwise comparison.}
+
+First of all, we would like to mention the obvious advantages of data augmentation. Experiments without data augmentation show us that the augmentation step could be critical in deep learning image projects. Besides, this stage provided us a first feedback about how \"classical\" architectures worked. However, the big burden of the project relies on the experiments with data augmentation.
+
+The first big conclusion of the project is that Residual U-net, our proposed architecture, outperforms the only residual or only skip-connection based ones. Combining the aforementioned benefits of residual blocks and skip connections, we develop a model which is able to get information about the structure of the brain. We measured this in a quantitative way, the table \ref{table:expaug} show all the test metrics (which are also shown in a summarized and more visual way in figure \ref{fig:figs/all_test_metrics.png}), and the t-test post-hoc method (fig. \ref{fig:figs/ttest-pvals.png}) provide us statistical significance for this differences on the metrics. We have also checked it in a quantitative way in figures \ref{fig:figs/daug-mse-qualitative.png} and \ref{fig:figs/daug-dssim-qualitative.png}, where we can see that structural information is used when filling the black region.
+
+We also notice that \textbf{all methods are outstanding (both MSE and DSSIM) for removing noise and fixing image blur}, all of them being able to perform a very good reconstruction in which neither blur nor noise is appreciated. However, there are difference between architectures reconstructing the \textbf{dropout}. Shallow Residual architecture (both for DSSIM and MSE loss and also both L2 and without L2), provide reconstruction with some little dark dots in them as we can see in both figures for Shallow RES models. On the contrary, Residual U-Net, Myronenko and Skip Connection CAE are able to totally reconstruct the dropped out pixels. 
+
+Finally, a critical process in reconstruction is the filled of \textbf{blanked-out regions}. Focusing on the \textbf{difference between architectures}, we observe that Residual U-Net is the more accurate one if we observe the models trained with MSE in figure \ref{fig:figs/daug-mse-qualitative.png}. It is the only model who is able to estimate a good shape for the region between the skull and the brain and simulate a kind of brain limit. This model is followed in accuracy by the Shallow Residual models (Both for L2 and no-L2 regularization). This 2 methods, although with lower qualitative accuracy, try to reconstruct a darker part belonging to the limit brain-skull and a lower brighter part belonging to the brain. The remaining MSE-loss-methods make a blurred reconstruction of the blanked-out region for this example. 
+
+However, \textbf{the reconstruction of blanked-out regions is the main difference between models trained with MSE and with DSSIM loss}. DSSIM models show as good reconstruction as MSE models with blurring, noise and dropout, thus, main difference is observed in the reconstruction of blancked-out parts. If we compare the same model in figures \ref{fig:figs/daug-mse-qualitative.png} and \ref{fig:figs/daug-dssim-qualitative.png}, we notice the best brain structure reconstruction made in DSSIM models. Residual U-Net is still the best and the structure reconstructed is better for the model trained with DSSIM than trained with MSE loss. But reconstruction improvement is more visible in the other models. The same models but trained with DSSIM loss provides better reconstruction based on the structural information of the brain. The reconstruction made by DSSIM-loss models show a big effort to simulate the skull-brain limit, painting kind of a dark line, instead of the same MSE-loss models which paint a big blurred square. This improvement is specific showed in the figure \ref{fig:figs/daug-dssim-qualitative.png}, where Shallow Residual models shows the better skull-brain limit reconstruction, but also it is seen in Myronenko and Skip Connection+L2 CAE. 
+
+As a final thought, \textbf{we notice qualitatively that L2 regularization has a better effect when DSSIM loss is used}. We can see in figure \ref{fig:figs/daug-dssim-qualitative.png} that Shallow residual+L2 works better than Shallow residual and also Skip Connection CAE+L2 provides better reconstruction than Skip Connection CAE without regularization. In contrast, no difference in shown between these pairs when MSE is optimized (\ref{fig:figs/daug-mse-qualitative.png}).
+
+
+\imagen{figs/all_test_metrics.png}{Comparison of all augmented-model test metrics.}
+
+\iffalse
+DAug vs No DAug: Obvio
+L2 vs no L2: mejora en DSSIM tanto en quqnti como en cuali
+Archs vs Archs: mejor nueva: residuales mejor en tal, skip mejor en cual
+MSE vs DSSIM: qualitatively
+
+\section{\TBD{Data Pipeline}}
 \label{section:data_preprocessing}
  
- \TBD{Tell about voxel inspection to select profile}
+https://www.frontiersin.org/articles/10.3389/fninf.2014.00014/full
+
+ \TBD{Tell about voxel inspection to select profile (isotropic)}
  
- \TBD{Tell about orientation checking (nifti header or subset checking)}
+ \TBD{Tell about orientation checking (nifti header and subset checking)}
  
  \TBD{Tell about bout how to get relevant slices}
  
- \TBD{Tell about image preprocessing (translate, contrast, downsampling, normalize)}
+ \TBD{Tell about image preprocessing (downsampling, normalize)}
  
  \TBD{Tell about split train-test}
  
@@ -50,25 +449,16 @@ First notebook: MRI data familiarization and nibabel familiarization. How to man
  
 \begin{itemize}
     \item Select profile: voxel size
-    \item intensity-normalized
+    \item Orientation checking.
     \item Select slices: relevant information
-    \item Clean duplicates
-    \item Improve target images: mean local, enhance contrast, etc
-    \item Downsampling
-    \item Pixel normalization: range [0-1]
+    \item Downsampling and Pixel normalization: range [0-1]
     \item Data split: split train and test: stratify by sex, age and etc.
-    \item Data augmentation in train
+    \item Data augmentation in train on-the-fly.
     \begin{itemize}
         \item Add gaussian noise
+        \item Gaussian blur
+        \item Dropout pixels
         \item Crop images
     \end{itemize}
-    
-\TBD{For non-isotropic acquisitions, we should ideally slice them so that the slices are high resolution. For example, if the voxel resolution is 1x1x5 mm3, we should slice the volume so that the slices are 1x1mm2 rather than 1x5mm2 (or 5x1mm2)
-2. Overriding the above, we need to be consistent in which orientation we are slicing. In other words, if we are getting axial slices from one volume, we should make sure we get axial slices for all patients. Otherwise, the network will likely not train well.}    
-    
 \end{itemize}
-
-\TBD{\section{Results}}
-
-Make some filter exploration when noise, when cropped, when clear, etc. 
-\myurl{http://deeplearning.net/tutorial/dA.html#running-the-code}{http://deeplearning.net/tutorial/dA.html#running-the-code}
+\fi

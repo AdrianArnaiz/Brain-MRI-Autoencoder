@@ -1,4 +1,35 @@
 \chapter{Conclusion and Outlook}
 \label{chapter:Conclusion}
 
-\section{\TBD{To Be Done}}
+\TBD{This section will be made in the last PEC: REPORT}
+
+As a Masther Thesis on Data Science, we also have focus our project in keep the good habits of Data Science projects. We have follow the Crisp-dm stages and the classical data lifecycle.
+
+\section{Future work}
+
+\TBD{Show how the MRI reconstruction is donde in the brain-sides to show the benefits of the DEPPBRAIN filtering}
+
+\TBD{Make some filter exploration to dive deep into the differences in reconstruction between residual and skip connections architectures. 
+\myurl{http://deeplearning.net/tutorial/dA.html\#running-the-code}{http://deeplearning.net/tutorial/dA.html\#running-the-code}}
+
+\TBD{Make a simple experiment of potential use of this autoencoder: show how brain segmentation improves with reconstructed images instead of corrupted ones. For this task we can follow this steps: compare the acurracy of segmentation masks made directly from corrupted inputs to the accuracy of segmentation masks made from the Autoencoder reconstructions. (1) Get mask from original brain (2) get mask from corrupted mri (3) get mask from reconstructed input (4) get metrics ACU(mask, corr-mask) and ACU(mask, reconts-mask)}
+
+
+\iffalse
+\section{\TBD{Data Life-cycle}}
+\label{section:datalifecycle}
+
+\begin{itemize}
+    \item Capture: download from web.
+    \item Storage: Locally.
+    \item Preprocessing: src/1.DataPreprocessing/0.\%20Examples\%20of\%20MRI\%20preprocessing.ipynb : tutorial of MRI transformations
+    \begin{itemize}
+        \item Cleaning and filtering: clean corrupted data, filter no-needed data.
+        \item MRI preprocessing: Normalize, downsampling.
+        \item Data augmentation: Noise addition, crop parts, Blurring, Dropout.
+    \end{itemize}
+    \item Analysis: create autoencoder
+    \item \textbf{Visualization: Optional - Make some visualizations from results, layers or behavior of the autoencoder. Ver las capas de los kernels como se activan con las entradas, ver resultados de capas intermedias, ver cualitativos.}
+    \item Publication.
+\end{itemize}
+\fi
