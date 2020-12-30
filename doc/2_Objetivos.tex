@@ -12,8 +12,9 @@ In this chapter, we will establish the aims of the project. We have just spoken 
 \begin{itemize}
     \item To build a \textbf{autoencoder} that gets good results with control \textbf{T1-weighted brain MRI}: given a "clean" T1-WMRI, the autoencoder will return the same image as equal as we can to the original.
     \item Due to the nature of the autoencoder train, it will be able to remove noise or reconstruct hidden parts of the input MRI (making data-augmentation in real time).
-    \item Research a good autoencoder architecture and parameters (loss function, batch-norm or not batch-norm, regularization, etc).
-    \item Establish a good brain MRI pre-processing.
+    \item Research the benefits of skip connections, residual building blocks and the combination of both.
+    \item Research a good autoencoder architecture and parameters (loss function, regularization or not, etc).
+    \item Establish a good brain MRI pre-processing with a novel relevant slice selection.
 \end{itemize}
 
 \section{Secondary aims}
@@ -24,7 +25,7 @@ In this chapter, we will establish the aims of the project. We have just spoken 
     \item Research the reconstruct applications for image enhancement, disease detection or data augmentation.
 \end{itemize}
 
-These next objectives will be addressed if the primary ones are reached. We could see these aims like a extra for the project. If we achieved good performance in this task, we would research about how to apply this solution to disease detection or data augmentation.
+These next objectives will be addressed if the primary ones are reached. We could see these aims like a extra for the project, and a potential future work. If we achieved good performance in this task, we would research about how to apply this solution to disease detection or data generation.
 
 \begin{itemize}
     \item Build a semi-supervised autoencoder.

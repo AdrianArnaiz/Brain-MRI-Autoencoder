@@ -1,8 +1,6 @@
 \chapter{Introduction}
 \label{chapter:introduccion}
 
-\textit{Not Final Note: \TBD{This color ('TBD' tag in latex) are going to be used in non-final versions of the memory to highlight the non-final sentences or things to be changed in the final version}}.
-
 In this chapter we will introduce the main background, and aims of the project, basing it on its non-solved tasks and relevance.
 
 %%% SECTION
@@ -41,8 +39,7 @@ There are some approaches to reduce the noise and artifacts in MRI images. An re
 
 There are some Deep Learning Architectures to address in the problem of denoise an brain MRI: Single-scale CNN, Denoising CNN, Autoencoders, and GAN-based architectures. \textbf{We will choose the Autoencoder Architecture for this project}.
 
-\textbf{Autoencoders} \cite{autoencoder} encode the input into a lower-dimensional space. It extracts important information from the higher-dimensional space, encodes it, and then decodes it to reconstruct the higher-dimensional spacer from the lower one. \TBD{This architecture will be deeply explained in \ref{chapter:theory} in further stages of the project.}
-
+\textbf{Autoencoders} \cite{autoencoder} encode the input into a lower-dimensional space, smaller, as a dense representation. It extracts important information from the higher-dimensional space, encodes it, and then decodes it to reconstruct the higher-dimensional spacer from the lower one. As the latent space has far fewer units than the input, the encoder must discard information. The encoder learns to preserve as much relevant information as possible. The decoder learns to properly reconstruct it into a complete picture. Therefore, if $x$ is the input $e(x)$ the encoded input and $d(e(x))$ the decoded output, the main objective is reach $x=d(e(x))$. It could be seen as a data compression or dimensionality reduction method.
 
 
 \subsection{Our approach}
@@ -73,75 +70,3 @@ This project has fully opened me the doors the world of artificial intelligence 
 Then I worked half year in Ernst and Young, developing Machine Learning systems for RPA tasks (classify emails at Telefónica, Chatbot for Maxium or Fuzzy Name Matching for Xunta de Galicia).
 
 In addition, I believe that the application of AI to medicine is one of the fields that may be of greater general interest to society. By advancing in the speed and quality of medical diagnoses and treatments, it will be possible to achieve health of higher quality, speed and accessibility for all. Also, computer vision and deep learning have helped to achieve big advances in this field nowadays. 
-
-
-\iffalse
-\section{Latex Examples}
-
-\begin{figure}
-	\centering
-	\includegraphics[width=0.6\textwidth]{figs/image1.png}
-	\caption{Pie de la imagen.}
-	\label{fig:context-anoni1}
-\end{figure}
-
-
-\imagen{figs/image1.png}{asdasd}
-
-Un ejemplo de pseudo-código se puede encontrar en el Código \ref{code:RandomSwitch-1}
-
-\begin{algorithm}
-	\caption{Pseudocódigo del algoritmo \textit{Random Switch}}
-	\label{code:RandomSwitch-1}
-	\begin{algorithmic}
-		\REQUIRE{El grafo original $G$ y el porcentaje de anonimización $p$ que se desea aplicar.}
-		\ENSURE{El grafo $G$ anonimizado.}
-		\STATE $num = round(G.num\_edges() * p)$
-		\STATE $i = 0$
-		\WHILE {$i < num$}
-		\STATE {$e_{1} = G.random\_edge()$}
-		\STATE $e_{2} = G.random\_edge()$
-		\STATE $new\_e_{1} = (e_{1}.origen, e_{2}.origen)$
-		\STATE $new\_e_{2} = (e_{1}.destino, e_{2}.destino)$
-		\IF {$!G.exist(new\_e_{1})$ \AND $!G.exist(new\_e_{2})$}
-		\STATE $G.add\_edge(new\_e_{1})$
-		\STATE $G.add\_edge(new\_e_{2})$
-		\STATE $G.delete\_edge(e_{1})$
-		\STATE $G.delete\_edge(e_{2})$
-		\STATE $i=i+1$
-		\ENDIF
-		\ENDWHILE
-		\RETURN $G$
-	\end{algorithmic}
-\end{algorithm}
-
-Un ejemplo de tabla se puede ver en la Tabla \ref{table:ejemplo_vertex_refi_query}
-
-\begin{table}
-	\centering{}
-	\begin{tabular}{ l || c | c | l }
-		\hline
-		Node ID & $\mathcal{H}_{0}$ & $\mathcal{H}_{1}$ & $\mathcal{H}_{2}$ \\
-		\hline
-		\hline
-		Alice & $\epsilon$ & 1 & \{4\}  \\
-		\hline
-		Bob & $\epsilon$ & 4 & \{1, 1, 4, 4\}  \\
-		\hline
-		Carol & $\epsilon$ & 1 & \{4\}  \\
-		\hline
-		Dave & $\epsilon$ & 4 & \{2, 4, 4, 4\}  \\
-		\hline
-		Ed & $\epsilon$ & 4 & \{2, 4, 4, 4\}  \\
-		\hline
-		Fred & $\epsilon$ & 2 & \{4, 4\}  \\
-		\hline
-		Greg & $\epsilon$ & 4 & \{2, 2, 4, 4\}  \\
-		\hline
-		Harry & $\epsilon$ & 2 & \{4, 4\}  \\
-		\hline
-	\end{tabular}
-	\caption{\textit{Vertex refinement queries}.}
-	\label{table:ejemplo_vertex_refi_query}
-\end{table}
-\fi

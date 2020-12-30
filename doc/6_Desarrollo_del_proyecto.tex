@@ -90,7 +90,7 @@ We only apply 2 preprocessing techniques to our brain slices: \textbf{downsampli
     \item \textbf{Normalization}: We normalize the intensity of pixels of the image in the range [0-1]. It is very important the compatibility of normalization and activation function of the last layer of the neural network. If the possible range of the output and the range of the input are different, errors will be bigger and reconstruction may fail. Consequently we will use sigmoid function in last layer because it output range is also [0-1].
 \end{itemize}
 
-Both of these preprocessing techniques are made \textbf{on-the-fly} with a \textbf{customized Tensorflow Data Loade}r and with Tensorflow functions (\texttt{tf.image} and \texttt{tf.math} modules) to optimize the training speed. This Data Loader will be explained in section \ref{subsection:loader}.
+Both of these preprocessing techniques are made \textbf{on-the-fly} with a \textbf{customized Tensorflow Data Loader} and with Tensorflow functions (\texttt{tf.image} and \texttt{tf.math} modules) to optimize the training speed. This Data Loader will be explained in section \ref{subsection:loader}.
 
 \section{Data Split}
 \label{subsection:datasplitting}
@@ -132,7 +132,7 @@ Once data is extracted and splitted, \textbf{the final sizes of each set are sho
 
 \section{Experiment}
 
-In the stage we are going to train several models with different characteristics to obtain an empirical comparison of the different strategies researched in the state of the art: different architectures, different loss functions, different residual building blocks, regularization and no regularization, and finally, the experiment with a new proposed architecture. Before starting the architecture and model explanations, we are going to offer an explanation of the development environment, the customized Tensorflow data loader designed to optimize the speed and ease of the training and the augmentation.
+In the stage we are going to train several models with different characteristics to obtain an empirical comparison of the different strategies researched in the state of the art: different architectures, different loss functions, different residual building blocks, regularization and no regularization, and finally, the experiment with a new proposed architecture. Before starting the architecture and model explanations, we are going to offer an explanation of the development environment, the customized Tensorflow data loader designed to optimize the speed and ease of the training and the augmentation. Furthermore, in this section we are also going to discuss the methods and results as we explain and obtain them.
 
 \subsection{Environment}
 
@@ -240,12 +240,13 @@ Regarding this, we add skip connections with concatenation to the shallow residu
 
 \imagen[1]{figs/resunet.png}{Residuel U-Net Architecture.}
 
+\clearpage
 
 %%% Experiments
 \subsection{Experiments}
 \label{subsection:experiments}
 
-As we explained before, we want to compare these shallow architectures to obtain the best one. Also, we want to compare another features: the consequences of the use of data augmentation, the effects of L2 regularization, and the differences in learning between\textbf{ Mean Square Error} (MSE) and \textbf{structural DiSSIMilarity} (DSSIM) losses. Consequently we started with a sample experiment training some models without data augmentation and MSE loss. As we know that data augmentation is needed, we did only a few experiments without it, placing on all the importance of the project in the experiments with data augmentation. With data augmentation we trained the architectures both with MSE and DSSIM losses. In addition, L2 regularization was added to some of them to discover the effect. However, every architecture was not trained with and without L2 because the number of experiments wuold have been huge, so we consider that a consistent experiment regarding regularization is beyond the scope of this project. Every model trained was tested quantitatively with MSE, DSSIM and \textbf{Peak Signal to Noise Ratio} (PSNR) as well as qualitatively.
+As we explained before, we want to compare these shallow architectures to obtain the best one. Also, we want to compare another features: the consequences of the use of data augmentation, the effects of L2 regularization, and the differences in learning between \textbf{Mean Square Error} (MSE) and \textbf{structural DiSSIMilarity} (DSSIM) losses. Consequently we started with a sample experiment training some models without data augmentation and MSE loss. As we know that data augmentation is needed, we did only a few experiments without it, placing on all the importance of the project in the experiments with data augmentation. With data augmentation we trained the architectures both with MSE and DSSIM losses. In addition, L2 regularization was added to some of them to discover the effect. However, every architecture was not trained with and without L2 because the number of experiments would have been huge, so we consider that a consistent experiment regarding regularization is beyond the scope of this project. Every model trained was tested quantitatively with MSE, DSSIM and \textbf{Peak Signal to Noise Ratio} (PSNR) as well as qualitatively. As aforementioned, we are also going to discuss the results as we explain and obtain them.
 
 Our models use \textbf{100 epochs} for training with a \textbf{batch size of 32}. We use \textbf{RMSProp optimizer} which divides the gradient by a running average of its recent magnitude. We configure the \textit{Early Stopping} callback with a patience of 20 and a min delta of $2e-7$ if MSE loss is used or $5e-5$ if DSSIM loss instead. To optimize the training and lead it to a better convergence we use \textbf{ReduceLROnPlateau} which reduces the learning rate by a factor of 0.2 if the validation loss does not improve in 4 epochs. The min improvement also depends on the loss used.
 
@@ -256,7 +257,7 @@ We have coded a parametrizable python script to ease the training of the models.
 
 \subsubsection{Metrics}
 
-MSE error is measured as the mean intensity pixel-wise squared error between 2 images. Besides, as SSIM is used to measuring the similarity between two images, we used DDSIM to compute the dissimilarity and being able to minimize it when used as loss function. Finally, PSNR gives the peak error in the output image. The value of this parameter should be large, as it represents the ratio of signal power-to-noise power, noise power should be minimum. PSNR is not used as loss, only as test metric. 
+MSE error is measured as the mean intensity pixel-wise squared error between 2 images. Besides, as SSIM is used to measuring the similarity between two images, we used DSSIM to compute the dissimilarity and being able to minimize it when used as loss function. Finally, PSNR gives the peak error in the output image. The value of this parameter should be large, as it represents the ratio of signal power-to-noise power, noise power should be minimum. PSNR is not used as loss, only as test metric. 
 
 $$MSE = \frac{1}{n} \sum^{n}_{i=1}(Y_i-\hat{Y}_i)^2; PSNR=10\times \log_{10}\frac{peakval^2}{MSE(x,y)}; DSSIM = \frac{1-SSIM(x,y)}{2}$$
 
@@ -306,7 +307,7 @@ First of all, we can see that the evolution of validation loss (figure \ref{fig:
 
 \imagen{figs/lossvalaug.png}{Evolution of validation loss on augmented models.}
 
-Table \ref{table:expaug} shows the results of every model. It shows the model architecture, loss and configuration in the first 3 columns; best validation loss in the 4th column measured in the loss metric; then, it shows the MSE, DSSIM and PSNR metric on test set. In each column, result is shown in bold-style. However, in one column the best value is formatted in bold-blue and the others in bold. This column is the test metric of the trained loss. We realize \textbf{our proposed method (RES-UNET) outperforms quantitatively every model else regarding every test metric}. This method is the best trained with both loss functions. To continue, if we focus in comparison of regularization we can observe one clear fact: on one hand \textbf{L2 regularization is helpful when the model optimizes DSSIM loss and on the other handn this L2 regularization decreases the performance for methods that optimizes MSE loss}. Deeper conclusion and comparisons will be made in section \ref{section:results}.
+Table \ref{table:expaug} shows the results of every model. It shows the model architecture, loss and configuration in the first 3 columns; best validation loss in the 4th column measured in the loss metric; then, it shows the MSE, DSSIM and PSNR metric on test set. In each column, result is shown in bold-style. However, in one column the best value is formatted in bold-blue and the others in bold. This column is the test metric of the trained loss. We realize \textbf{our proposed method (RES-UNET) outperforms quantitatively every model else regarding every test metric}. This method is the best trained with both loss functions. To continue, if we focus in comparison of regularization we can observe one clear fact: on one hand \textbf{L2 regularization is helpful when the model optimizes DSSIM loss and on the other hand this L2 regularization decreases the performance for methods that optimizes MSE loss}. Deeper conclusion and comparisons will be made in section \ref{section:results}.
 
 
 
@@ -423,42 +424,3 @@ As a final thought, \textbf{we notice qualitatively that L2 regularization has a
 
 
 \imagen{figs/all_test_metrics.png}{Comparison of all augmented-model test metrics.}
-
-\iffalse
-DAug vs No DAug: Obvio
-L2 vs no L2: mejora en DSSIM tanto en quqnti como en cuali
-Archs vs Archs: mejor nueva: residuales mejor en tal, skip mejor en cual
-MSE vs DSSIM: qualitatively
-
-\section{\TBD{Data Pipeline}}
-\label{section:data_preprocessing}
- 
-https://www.frontiersin.org/articles/10.3389/fninf.2014.00014/full
-
- \TBD{Tell about voxel inspection to select profile (isotropic)}
- 
- \TBD{Tell about orientation checking (nifti header and subset checking)}
- 
- \TBD{Tell about bout how to get relevant slices}
- 
- \TBD{Tell about image preprocessing (downsampling, normalize)}
- 
- \TBD{Tell about split train-test}
- 
- \TBD{Tell about data augmentation (Gaussian bluring, noise, crop, crop+inpaint)}
- 
-\begin{itemize}
-    \item Select profile: voxel size
-    \item Orientation checking.
-    \item Select slices: relevant information
-    \item Downsampling and Pixel normalization: range [0-1]
-    \item Data split: split train and test: stratify by sex, age and etc.
-    \item Data augmentation in train on-the-fly.
-    \begin{itemize}
-        \item Add gaussian noise
-        \item Gaussian blur
-        \item Dropout pixels
-        \item Crop images
-    \end{itemize}
-\end{itemize}
-\fi

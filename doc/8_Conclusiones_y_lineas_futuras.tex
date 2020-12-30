@@ -1,35 +1,24 @@
 \chapter{Conclusion and Outlook}
 \label{chapter:Conclusion}
 
-\TBD{This section will be made in the last PEC: REPORT}
+\section{Conclusion}
 
-As a Masther Thesis on Data Science, we also have focus our project in keep the good habits of Data Science projects. We have follow the Crisp-dm stages and the classical data lifecycle.
+First of all, we want to highlight the deep research of the state of the art, in which we have made a review of pipelines, methods and applications. We want that chapter to be seen as a review paper, where we have followed the steps that are made in the classical review papers.
+
+The deeper discussion of the results of every experiment is already done along the last section \ref{subsection:experiments} while we made the experiments. We also summarized it in section \ref{section:results}. Therefore, we can conclude that \textbf{the combination of skip-connections and residual building blocks in shallow-autoencoders have significant benefits in the reconstruction of magnetic resonance images of the healthy brain, quantitatively and qualitatively} (see Table \ref{table:expaug} and Figures \ref{fig:figs/daug-mse-qualitative.png}, \ref{fig:figs/daug-dssim-qualitative.png}, \ref{fig:figs/ttest-pvals.png} and \ref{fig:figs/all_test_metrics.png}). We can also obtain other conclusions on other aspects. Every method, regarding every architecture and loss function used, is outstandingly able to remove Gaussian noise and the blur of a brain image. Besides, architectures with skip connections (RES-UNET and skip-connection CAE) and with dropout regularization (Myronenko) fix excellently the dropouted pixels. Although dropout reconstruction is also very good for Shallow residual models, we can see a few amount of dropouted pixels not reconstructed. 
+
+To continue, regarding the reconstruction of blanked-out regions, the proposed method and the shallow residual ones are the best in this task. Besides, reconstructions made with DSSIM loss outperforms the ones made with the methods trained with MSE loss. Methods trained with DSSIM loss are better at the task of reconstructing the real structure and shape. MSE methods are more prominent to predict blurred gray pixels. Finally, the conclusion about the use of L2 regularization that it works better when DSSIM loss is used. Although L2 leads the MSE methods to lightly avoid to reconstruct a regular gray cloud of pixels in blanked-out regions, the effect is more noticeable in DSSIM methods, in which we can see that there is a better approach to simulate the brain structure. This happens because DSSIM tries to reduce difference in the structural information instead of the pixelwise difference.
+
+Finally, as a Master's Thesis on Data Science, we also have focus our project in keep the good habits of Data Science projects. We have follow the Crisp-DM stages and the classical data life-cycle, keeping in mind the good behaviour with the data.
+
 
 \section{Future work}
 
-\TBD{Show how the MRI reconstruction is donde in the brain-sides to show the benefits of the DEPPBRAIN filtering}
+Given the timescales of the project and the extension of the report, other planned experiments have been out of the scope of the project. There are three groups of experiments that we wanted to do: experiments of explainable AI (XAI) to explore the behavior of our models, experiments of potential applications of our trained models, and finally experiments with other alternative models and architectures.
 
-\TBD{Make some filter exploration to dive deep into the differences in reconstruction between residual and skip connections architectures. 
-\myurl{http://deeplearning.net/tutorial/dA.html\#running-the-code}{http://deeplearning.net/tutorial/dA.html\#running-the-code}}
+The first group of futures experiments are about XAI. For explain the difference of behaviour between our residual CAE, skip-connections CAE and residual U-NET CAE, we will propose a visual exploration of the activation of feature maps of each layer, as it is made in \cite{kernelsactivation} an in other \href{https://towardsdatascience.com/using-skip-connections-to-enhance-denoising-autoencoder-algorithms-849e049c0ac9}{resources}. In addition, we could also explore the latent space visually and with dimensional reduction techniques. With this experiment we would dive deep into the differences in reconstruction between residual and skip connections architectures. Another potential experiment to explore deeper in the qualitative results of our method is analyze the reconstruction of the images in the sides of the brain. As we have included more relevant images than the state of the art projects made, our hypothesis is that our model would reconstruct better the images of the edges of the brain.
 
-\TBD{Make a simple experiment of potential use of this autoencoder: show how brain segmentation improves with reconstructed images instead of corrupted ones. For this task we can follow this steps: compare the acurracy of segmentation masks made directly from corrupted inputs to the accuracy of segmentation masks made from the Autoencoder reconstructions. (1) Get mask from original brain (2) get mask from corrupted mri (3) get mask from reconstructed input (4) get metrics ACU(mask, corr-mask) and ACU(mask, reconts-mask)}
+The second group of future experiments is related to the potential applications of the trained methods. First, one possible application is the detection of brain disorders. This is based on the Pinaya et. al. research \cite{pinaya2019}. Our autoencoder defines a normative model of the healthy brain structure and the resonances with disorders would be outliers in the distribution. Therefore, a measure distance should be calculated between the input and output, and, if the input image has some disorder, this distance would be higher than a threshold (or maybe we could implement a supervised or unsupervised method with several distance measures). Second, another potential application would be the improvement of brain MRI automatic analysis pipelines. For instance, we can explore the benefits in brain segmentation pipelines. We could use the DeepBrain network to segment our images. We would set the brain mask from the original images made by DeepBrain as the ground truth. Then we calculate the DeepBrain mask from the randomly corrupted input, and also the DeepBrain mask from our reconstruction of the corrupted input. Then we calculate the differences or accuracy between the brain mask from the corrupted image and the ground truth and also between the brain mask from the reconstructed image and the ground truth. Finally, we compare both measures with the hypothesis that the latter accuracy should be higher than the former. So the steps would be: (1) Get mask from original brain as GT (2) get mask from corrupted mri (3) get mask from reconstructed input (4) get metrics ACU(mask, corrupted-mask) and ACU(mask, reconstructed-mask) (5) Compare them.
 
 
-\iffalse
-\section{\TBD{Data Life-cycle}}
-\label{section:datalifecycle}
-
-\begin{itemize}
-    \item Capture: download from web.
-    \item Storage: Locally.
-    \item Preprocessing: src/1.DataPreprocessing/0.\%20Examples\%20of\%20MRI\%20preprocessing.ipynb : tutorial of MRI transformations
-    \begin{itemize}
-        \item Cleaning and filtering: clean corrupted data, filter no-needed data.
-        \item MRI preprocessing: Normalize, downsampling.
-        \item Data augmentation: Noise addition, crop parts, Blurring, Dropout.
-    \end{itemize}
-    \item Analysis: create autoencoder
-    \item \textbf{Visualization: Optional - Make some visualizations from results, layers or behavior of the autoencoder. Ver las capas de los kernels como se activan con las entradas, ver resultados de capas intermedias, ver cualitativos.}
-    \item Publication.
-\end{itemize}
-\fi
+The last group of experiments includes those related to training different hyperparameter configuration, new models and architectures. First, we could implement deeper models and analyze the effects of using more layers. We could also use transfer learning, using some pretrained network with another set of images (like ResNet-50 trained with CIFAR). Last, but not least, we must use other families of models, which are based on another theoretical concepts instead of dimensionality reduction. We are regarding to use \textbf{generative models}. Generative models are on the edge, becoming more popular in many fields. Therefore, using Generative Adversarial Networks or Variational Autoencoders, could be a proper approach to capture the distribution of the structure of a normal brain. 

@@ -1,4 +1,4 @@
-Brain-MRI-Autoencoder
+Deep Convolutional Autoencoders for reconstructing magnetic resonance images of the healthy brain
 =
 
 [![made-with-python](https://img.shields.io/badge/Coded%20with-Python-21496b.svg?style=for-the-badge&logo=Python)](https://www.python.org/)
