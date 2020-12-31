@@ -37,7 +37,7 @@ It is built by all the main tasks that a master's degree final project must have
     canvas/.append style={fill=none, draw=black!5, line width=.75pt},
     hgrid style/.style={draw=black!5, line width=.75pt},
     vgrid={*1{draw=black!5, line width=.75pt}},
-    today=16,
+    today=17,
     today rule/.style={
       draw=black!64,
       dash pattern=on 3.5pt off 4.5pt,
@@ -69,13 +69,13 @@ It is built by all the main tasks that a master's degree final project must have
   ]{WEEKS:\quad1}{1}
   \gantttitlelist{2,...,17}{1} \\
   \ganttgroup[progress=100]{Project Selection}{1}{1} \\
-  \ganttgroup[progress=99]{Scope and planning}{2}{2} \\
+  \ganttgroup[progress=100]{Scope and planning}{2}{2} \\
   \ganttbar[
-    progress=95,
+    progress=100,
     name=WBS1A
   ]{Title, Keywords and Abstract}{2}{2} \\
   \ganttbar[
-    progress=99,
+    progress=100,
     name=tit
   ]{Overview, relevance and aims}{2}{2} \\
   \ganttbar[
@@ -97,7 +97,7 @@ It is built by all the main tasks that a master's degree final project must have
   
   \ganttgroup[progress=100]{Documentation}{15}{16} \\[grid]
   
-  \ganttgroup[progress=20]{Presentation and defence}{17}{17} \\
+  \ganttgroup[progress=99]{Presentation and defence}{17}{17} \\
   \ganttlink[link type=f-s]{cod}{exe}
 \end{ganttchart}
 \rmfamily
@@ -130,7 +130,7 @@ The phases of CRISP-DM \cite{crisp} are the following:
 \begin{description}
     \item[Business Understanding]: deep analysis of the business needs. In this phase we can establish an objective. In our case, we can research the state of art for Deep Convolutional Autoencoder for brain MRI and propose a model based on this research.
     \item[Data Understanding]: we should research the data sources as  \myurl{https://brain-development.org/ixi-dataset/}{IXI}, data quality and we should explore the data and its characteristics.
-    \item[Data Preparation]: Data should be cleaned, filtered, selected and integrated if necessary. We could carry out tasks like preprocessing T1 weighted brain MRI or realize data augmentation. I will be explained in-depth in section \ref{section:datalifecycle}.
+    \item[Data Preparation]: Data should be cleaned, filtered, selected and integrated if necessary. We could carry out tasks like preprocessing T1 weighted brain MRI or realize data augmentation. I will be explained in-depth in section \ref{section:dataset}.
     \item[Modeling]: Specify the model to use and the architecture, parameters, etc. Maybe running several model architecture and hyper-parameter optimization to reach the most powerful model. So in can be an iterative process.
     \item[Evaluation]: We must evaluate models properly to get meaningful conclusions. There are many techniques of model evaluation and it should be made carefully.
     \item[Deployment - Publication]: As our main goal is academic research, this phase would be \textit{Publication}. The tasks are: review the project and generate the final report.
