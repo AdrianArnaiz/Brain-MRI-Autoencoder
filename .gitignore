@@ -136,4 +136,12 @@ src/IXI-T1/img/test/*.npy
 src/IXI-T1/img/train_and_val/*.npy
 src/IXI-T1/PNG/
 
+#vscode
 .vscode/
+
+#qualitative results
+src/2.Experiments/results/Data_Aug/mse/qualitative/*
+src/2.Experiments/results/Data_Aug/dssim/qualitative/*
+src/2.Experiments/results/No_Data_Aug/mse/qualitative/*
+src/2.Experiments/results/No_Data_Aug/dssim/qualitative/*
+

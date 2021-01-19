@@ -80,9 +80,7 @@ We continue with a special case: \textbf{lesion inpainting} \cite{2020inpainting
 \imagen{figs/architecture_manjon.PNG}{U-Net based architecture of network of J. V. Manjon et. al. \cite{2020inpainting}}
 
 
-Besides of all of these principal studies and objectives, there are so many more. \myurl{ https://github.com/TheoEst/
-joint_registration_tumor_segmentation}{Théo Estienne et. al.} \cite{otherBraTS2020} in 2020 realize a project based in the study from A. Myronenko \cite{myronenko20183d} which we explained before. They also research Deep Learning architectures for tumor segmentation (BraTS 2018) and use a autoencoder-based network with 2 decoder branches: one for tumor segmentation an another for reconstruction. This last branch is only used for encoder-regularization. They use a fully convolutional VNet architecture, with convolutional layers, ReLU activation function and a intra-block residual
-connection with the output of the first activated convolution of the corresponding block. They use also direct connections from encoder to decoder part. 
+Besides of all of these principal studies and objectives, there are so many more. \myurl{ https://github.com/TheoEst/joint_registration_tumor_segmentation}{Théo Estienne et. al.} \cite{otherBraTS2020} in 2020 realize a project based in the study from A. Myronenko \cite{myronenko20183d} which we explained before. They also research Deep Learning architectures for tumor segmentation (BraTS 2018) and use a autoencoder-based network with 2 decoder branches: one for tumor segmentation an another for image registration. They use a VNet-based architecture both for encoder and the 2 decoder branches, with residual blocks and skip-connections as we explain before.
 
 We discover another study from \myurl{https://paperswithcode.com/paper/a-convolutional-autoencoder-approach-to-learn}{Evan M. Yu et. al. \cite{learnvolrepreCODE}} in which they try to learn volumetric representations from different parts of brain structure. They also use an autoencoder framework.They architecture is composed by 2 components: a spatial transformer network (STN) and a convolutional autoencoder (CAE). The autoencoder is a kind of ResNet-based one, because it uses residual blocks with skip connections, instance normalization and Leaky ReLU activation function.
 
@@ -177,7 +175,7 @@ In addition, an Autoencoder made with residual blocks made by A. Myronenko \cite
 
 \subsection{Other skip-connection-based architectures}
 
-As we explained before, deep plain networks suffer from performance degradation due to the loss of detail in deeper layers and vanishing gradient problem. Residual networks address this problems through residual blocks. But there is a inner idea in ResNets which other architectures also use: \textbf{skip-connections}. In ResNet skip-connections are added in order to estimate the residual function, but these kind of skip-connections can be added to networks with another purpose. Other networks like some Fully Convolutional Networks also use this skip-connections. Other networks like some Fully Convolutional Networks also use this skip-connections. For example, FCN-8 architecture has skip connections, in which some feature maps of the earlier layers are added to later layers.
+As we explained before, deep plain networks suffer from performance degradation due to the loss of detail in deeper layers and vanishing gradient problem. Residual networks address this problems through residual blocks. But there is a inner idea in ResNets which other architectures also use: \textbf{skip-connections}. In ResNet skip-connections are added in order to estimate the residual function, but these kind of skip-connections can be added to networks with another purpose. Other networks like some Fully Convolutional Networks also use this skip-connections. For example, FCN-8 architecture has skip connections, in which some feature maps of the earlier layers are added to later layers.
 
 \textbf{Skip connections from one layer of the encoder to it symmetric layer of the autoencoder} are added to the architecture with 2 purposes. First, to allow the signal to backpropagate straight to the lower layers and thus address the problem of gradient disappearance, facilitating deep network training and, thus, achieving improvements in restoration performance. Second, when we build a deeper network, low-detail of the image could be lost, making deconvolution difficult in recovering task. However, the skip connections pass through the feature maps which carry much image detail and helps deconvolution to recover the original image. 
 
@@ -196,7 +194,7 @@ Each of the 4 blocks used in the downsampling path is made up of 2 convolutional
 
 \imagen[0.7]{figs/unet_architecture.png}{U-Net architecture of original paper: O Ronneberger et. al. \cite{ronneberger2015unet}}
 
-U-Net has suffered some modifications, one of the most important is \textbf{V-Net}. This network was introduces by F. Miilletari et. al \cite{vnet}. V-Net is used for volumetric biomedical image segmentation and it gets a very good performance in this task. This network is used in the work or T. Estienne \cite{otherBraTS2020} to create a V-Net-based autoencoder to solve Brats 2018 challenge. V-Net combines the skip-symmetric-connections with residual blocks. It means that the encoder and decoder parts are built with residual blocks instead of convolutional blocks as U-Net. V-Net also changes the size of kernels and convolutions in respect to original U-Net, but the main change are the residual blocks. So, V-Net combine the 2 types of skip-connections we have spoken in this research of state of art: residual blocks and larger skip-connections between symetrich layers.
+U-Net has suffered some modifications, one of the most important is \textbf{V-Net}. This network was introduces by F. Miilletari et. al \cite{vnet}. V-Net is used for volumetric biomedical image segmentation and it gets a very good performance in this task. This network is used in the work or T. Estienne \cite{otherBraTS2020} to create a V-Net-based autoencoder to solve Brats 2018 challenge. V-Net combines the skip-symmetric-addition-connections with residual blocks. It means that the encoder and decoder parts are built with residual blocks instead of convolutional blocks as U-Net. V-Net also changes the size of kernels and convolutions in respect to original U-Net, but the main change are the residual blocks. So, V-Net combine the 2 types of skip-connections we have spoken in this research of state of art: residual blocks and larger skip-connections between symmetric layers.
 
 
 %%SECTION: SUMMARY
@@ -260,7 +258,7 @@ Finally, we made a recompilation of papers reviewed in Table 1 of D. Tamada, 202
         
         Learn Brain volumetric representation &  2018, Evan  M.  Yu  et.   al. \cite{learnvolrepreCODE} [Code available] & \textbf{STN+Residual CAE with skip connections, IN and LReLU}\\
         
-        3D Tumor segmentation & 2020, T. Estienne \cite{otherBraTS2020} [Code available] & \textbf{VNET Autoencoder for regularization to encoder.} \\
+        3D Tumor segmentation & 2020, T. Estienne \cite{otherBraTS2020} [Code available] & \textbf{VNet Autoencoder for BRATS and image registration.} \\
         
         Denoising for T1 weighted brain MRI & 2018, C. Bermudez, et al \cite{bermudez2018t1autoencoder} & \textbf{Autoencoder with skip connections} \\
         
