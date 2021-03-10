@@ -1,6 +1,8 @@
 Deep Convolutional Autoencoders for reconstructing magnetic resonance images of the healthy brain
 =
 
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/deep-convolutional-autoencoders-for/mri-reconstruction-on-ixi-dataset)](https://paperswithcode.com/sota/mri-reconstruction-on-ixi-dataset?p=deep-convolutional-autoencoders-for)
+
 [![made-with-python](https://img.shields.io/badge/Coded%20with-Python-21496b.svg?style=for-the-badge&logo=Python)](https://www.python.org/)
 [![made-with-latex](https://img.shields.io/badge/Documented%20with-LaTeX-4c9843.svg?style=for-the-badge&logo=Latex)](https://www.latex-project.org/)
 ![GitHub repo size](https://img.shields.io/github/repo-size/AdrianArnaiz/Brain-MRI-Denoiser-Autoencoder?style=for-the-badge&logo=Github)
@@ -23,6 +25,7 @@ Deep Convolutional Autoencoders for reconstructing magnetic resonance images of 
 ***************
 * [Report (82 pages)](https://github.com/AdrianArnaiz/Brain-MRI-Autoencoder/blob/master/doc/AdrianArnaiz_MRIAutoencoder.pdf)
 * [Slides (20 slides)](https://github.com/AdrianArnaiz/Brain-MRI-Autoencoder/blob/master/doc/PPT_AdrianArnaiz_Deep%20Convolutional%20Autoencoders%20for%20reconstructing%20magnetic%20resonance%20images.pdf)
+* [Papers with code](https://paperswithcode.com/paper/deep-convolutional-autoencoders-for)
 ***************
 
 ## Convolutional Autoencoder Architectures used
