@@ -23,7 +23,7 @@ Deep Convolutional Autoencoders for reconstructing magnetic resonance images of 
 * **Dr. Baris Kanber** - [bkanber@uoc.edu](mailto:bkanber@uoc.edu)
 
 ***************
-* [Report (82 pages)](https://github.com/AdrianArnaiz/Brain-MRI-Autoencoder/blob/master/doc/AdrianArnaiz_MRIAutoencoder.pdf)
+* [Report (82 pages)](http://hdl.handle.net/10609/127059)
 * [Slides (20 slides)](https://github.com/AdrianArnaiz/Brain-MRI-Autoencoder/blob/master/doc/PPT_AdrianArnaiz_Deep%20Convolutional%20Autoencoders%20for%20reconstructing%20magnetic%20resonance%20images.pdf)
 * [Papers with code](https://paperswithcode.com/paper/deep-convolutional-autoencoders-for)
 ***************
